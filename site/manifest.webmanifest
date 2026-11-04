@@ -1,0 +1,17 @@
+{
+  "name": "เลขเด็ด 88",
+  "short_name": "เลขเด็ด 88",
+  "description": "สถิติ เลขเด็ด และตรวจหวยไทย N3 ลาว",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#eef3ee",
+  "theme_color": "#0f8a4f",
+  "lang": "th",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}
