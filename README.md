@@ -34,7 +34,21 @@ docs/         ภาพหน้าจอ และรูปโปรไฟล�
 
 ทุกครั้งที่แก้โค้ด: **Deploy > Manage deployments > แก้ไข > New version** (ลิงก์เดิมใช้ต่อได้) · ถ้าแก้ทริกเกอร์ให้รัน `setup()` ใหม่
 
-## ซิงก์กับ GitHub ด้วย clasp (แนะนำ)
+## แก้บน GitHub แล้ว deploy อัตโนมัติ (GitHub Actions)
+ทุกครั้งที่แก้ไฟล์ใน `src/` บน branch `main` → `.github/workflows/deploy.yml` จะทดสอบ → `clasp push` → อัปเดต deployment เดิม (ลิงก์ `/exec` ไม่เปลี่ยน)
+
+ตั้งค่าครั้งเดียว — Settings > Secrets and variables > Actions > New repository secret:
+
+| Secret | ค่า |
+|---|---|
+| `CLASPRC_JSON` | เนื้อหาไฟล์ `~/.clasprc.json` หลัง `clasp login` |
+| `SCRIPT_ID` | Apps Script > Project Settings > Script ID |
+| `DEPLOYMENT_ID` | รหัส `AKfycb…` ในลิงก์เว็บ `…/macros/s/<รหัส>/exec` |
+
+> หลังเปิดใช้ ให้แก้โค้ดที่ GitHub เท่านั้น — ที่แก้ในหน้า Apps Script จะถูกเขียนทับรอบถัดไป
+> ถ้าเปลี่ยนเรื่องทริกเกอร์ ยังต้องรัน `setup()` ในหน้า Apps Script เอง
+
+## ซิงก์จากเครื่องด้วย clasp (ทางเลือก)
 ```bash
 npm install                      # ติดตั้ง clasp
 npx clasp login                  # ล็อกอิน Google ครั้งเดียว
