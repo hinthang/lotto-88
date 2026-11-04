@@ -1,0 +1,10 @@
+# clasp: ไฟล์ผูกโปรเจกต์ของแต่ละเครื่อง และ token ล็อกอิน
+.clasp.json
+.clasprc.json
+node_modules/
+# ไฟล์ทดสอบที่สร้างระหว่างรัน
+test/*.json
+test/*.html
+test/*.png
+test/vid/
+.DS_Store
