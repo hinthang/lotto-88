@@ -1,0 +1,1800 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#fbf9f5; --card:#fff; --ink:#1f2328; --muted:#6b7280; --line:#e6e1d6;
+    --accent:#b4231f; --accent-ink:#fff; --gold:#a87a14; --soft:#fff7e6; --soft-line:#f1dca8;
+    --lao:#1f5fae;
+    --win:#1d7a3a; --win-bg:#e7f5ec; --pend:#8a6d12; --pend-bg:#fdf4dc; --lose-bg:#f1f0ec;
+    --zero:#efede8;
+    --s1:#cde2fb; --s2:#9ec5f4; --s3:#6da7ec; --s4:#3987e5; --s5:#256abf; --s6:#184f95; --s7:#0d366b;
+  }
+  :root[data-theme="dark"]{
+      --bg:#17181b; --card:#212227; --ink:#ecebe7; --muted:#a3a3a0; --line:#34353b;
+      --accent:#e0524c; --accent-ink:#fff; --gold:#e3b54a; --soft:#2b2618; --soft-line:#4a3f1f;
+      --lao:#5b9be8;
+      --win:#6fd48f; --win-bg:#173322; --pend:#e3c461; --pend-bg:#352d14; --lose-bg:#2a2b30;
+      --zero:#2a2b30;
+      --s1:#104281; --s2:#184f95; --s3:#1c5cab; --s4:#2a78d6; --s5:#5598e7; --s6:#86b6ef; --s7:#b7d3f6;
+    }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:'Noto Sans Thai',system-ui,sans-serif;background:var(--bg);color:var(--ink);-webkit-tap-highlight-color:transparent}
+  body.lao{--accent:var(--lao)}
+  .wrap{max-width:680px;margin:0 auto;padding:16px 16px 48px}
+  h1{font-size:22px;margin:4px 0 2px}
+  h3{font-size:15px;margin:0 0 4px}
+  .sub{color:var(--muted);font-size:13px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin:12px 0}
+  .muted{color:var(--muted)} .small{font-size:13px}
+  button{font-family:inherit;font-size:15px;font-weight:600;border:0;border-radius:10px;padding:10px 16px;background:var(--accent);color:var(--accent-ink);cursor:pointer}
+  button.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+  button.mini{font-size:13px;padding:6px 10px}
+  button:disabled{opacity:.5}
+  input{font-family:inherit;font-size:16px;padding:9px 10px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);min-width:0;width:100%}
+  input:focus{outline:2px solid var(--accent);outline-offset:-1px}
+  input::placeholder{letter-spacing:normal;font-size:15px}
+  .hidden{display:none !important}
+  .topbar{display:flex;align-items:center;gap:10px}
+  .topbar .grow{flex:1;min-width:0}
+  .who{font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+  /* game switch */
+  .game{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:12px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:4px}
+  .game button{background:transparent;color:var(--ink);font-size:16px;padding:10px}
+  .game button.on.th{background:#b4231f;color:#fff}
+  .game button.on.lao{background:var(--lao);color:#fff}
+
+  /* tabs */
+  .tabs{display:flex;gap:6px;overflow-x:auto;margin:14px 0 4px;position:sticky;top:0;background:var(--bg);padding:6px 0;z-index:5}
+  .tab{flex:1;white-space:nowrap;background:var(--card);color:var(--ink);border:1px solid var(--line);font-size:14px;padding:9px 10px}
+  .tab.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+  .page{display:none}.page.on{display:block}
+
+  /* latest */
+  .latest{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;text-align:center}
+  .latest .first{grid-column:1/-1}
+  .latest .lbl{font-size:12px;color:var(--muted)}
+  .latest .num{font-weight:800;font-size:20px;letter-spacing:1px}
+  .latest .first .num{font-size:30px;color:var(--gold);letter-spacing:3px}
+
+  /* random */
+  .chips{display:flex;flex-wrap:wrap;gap:6px}
+  .chip{background:var(--card);color:var(--ink);border:1px solid var(--line);font-size:14px;padding:7px 12px;border-radius:99px;font-weight:600}
+  .chip.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+  .go{width:100%;font-size:18px;padding:14px;margin-top:12px}
+  .picks{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px}
+  .pick{background:var(--soft);border:1px solid var(--soft-line);border-radius:12px;padding:10px;text-align:center}
+  .pick.wide{grid-column:1/-1}
+  .pick .k{font-size:12px;color:var(--muted)}
+  .pick .v{font-size:34px;font-weight:800;letter-spacing:4px;font-variant-numeric:tabular-nums}
+  .pick.wide .v{font-size:38px;letter-spacing:6px}
+  .pick .why{font-size:12px;color:var(--muted);min-height:16px}
+  .note{font-size:12px;color:var(--muted);margin-top:10px;line-height:1.5}
+  .row{display:flex;gap:8px;flex-wrap:wrap}
+  .row > *{flex:1 1 140px}
+
+  /* stats */
+  .seg{display:flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .seg button{flex:1;background:var(--card);color:var(--ink);border-radius:0;font-size:13px;padding:8px 4px}
+  .seg button.on{background:var(--ink);color:var(--bg)}
+  .heat{display:grid;grid-template-columns:repeat(10,1fr);gap:2px;margin-top:12px}
+  .cell{aspect-ratio:1;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;cursor:pointer;font-variant-numeric:tabular-nums;border:0;padding:0}
+  .cell.sel{outline:2px solid var(--accent);outline-offset:1px}
+  .legend{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);margin-top:8px}
+  .legend i{display:inline-block;width:18px;height:10px;border-radius:2px}
+  .detail{margin-top:10px;font-size:14px;min-height:20px}
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .list{margin:6px 0 0;padding:0;list-style:none;font-size:14px}
+  .list li{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:5px 0;border-bottom:1px dashed var(--line)}
+  .list b{font-variant-numeric:tabular-nums;letter-spacing:1px}
+
+  /* tickets */
+  .tnum{font-size:20px !important;letter-spacing:4px;text-align:center}
+  .tk{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+  .tk:last-child{border-bottom:0}
+  .tk .n{font-size:20px;font-weight:800;letter-spacing:3px;font-variant-numeric:tabular-nums}
+  .tk .d{font-size:12px;color:var(--muted)}
+  .tk .grow{flex:1;min-width:0}
+  .badge{font-size:12px;font-weight:700;padding:3px 9px;border-radius:99px;white-space:nowrap}
+  .b-win{background:var(--win-bg);color:var(--win)} .b-lose{background:var(--lose-bg);color:var(--muted)} .b-pend{background:var(--pend-bg);color:var(--pend)}
+  .x{background:transparent;color:var(--muted);padding:4px 8px;font-size:18px}
+  .sum{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center;margin-top:10px}
+  .sum div{background:var(--bg);border-radius:10px;padding:8px}
+  .sum b{display:block;font-size:18px}
+
+  /* search */
+  .search{display:flex;gap:8px}
+  .search input{flex:1;font-size:26px;letter-spacing:6px;text-align:center}
+  .draw{border-top:1px solid var(--line);padding:10px 0}
+  .draw .grid{display:grid;grid-template-columns:1fr 1fr;gap:2px 10px;font-size:14px;color:var(--muted)}
+  .draw .grid b{color:var(--ink)}
+  mark{background:#ffe08a;color:#1f2328;border-radius:3px;padding:0 2px}
+  .tag{display:inline-block;font-size:11px;padding:1px 7px;border-radius:99px;background:var(--accent);color:var(--accent-ink);margin:2px 4px 0 0}
+
+  /* auth */
+  .auth{max-width:420px;margin:8vh auto 0}
+  .auth .seg{margin:14px 0}
+  .auth label{display:block;font-size:13px;color:var(--muted);margin:10px 0 4px}
+  .auth button[type=submit]{width:100%;margin-top:16px;padding:12px;font-size:16px}
+
+  /* admin */
+  .mem{display:flex;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid var(--line);flex-wrap:wrap}
+  .mem .grow{flex:1 1 160px;min-width:0}
+  .mem .acts{display:flex;gap:6px;flex-wrap:wrap}
+  .pill{font-size:11px;padding:1px 8px;border-radius:99px;background:var(--lose-bg);color:var(--muted);margin-left:4px}
+  form.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+  form.grid2 label{font-size:12px;color:var(--muted);display:flex;flex-direction:column;gap:3px}
+  .full{grid-column:1/-1}
+  .msg{font-size:14px;margin-top:8px}
+  .err{color:var(--accent)}
+  .ok{color:var(--win)}
+  .loading{color:var(--muted);text-align:center;padding:30px 0}
+  .tip{position:fixed;pointer-events:none;background:var(--ink);color:var(--bg);font-size:13px;padding:6px 9px;border-radius:8px;z-index:20;display:none;white-space:nowrap}
+
+  /* ───── polish ───── */
+  :root{ --accent2:#8e1a17; --lao2:#184a86; --shadow:0 1px 2px rgba(31,35,40,.05),0 8px 24px rgba(31,35,40,.07); }
+  :root[data-theme="dark"]{ --accent2:#b83f3a; --lao2:#3f78bf; --shadow:0 2px 6px rgba(0,0,0,.35),0 10px 28px rgba(0,0,0,.42); }
+  body.lao{ --accent2:var(--lao2) }
+  body::before{ content:"";position:fixed;left:0;right:0;top:0;height:240px;background:var(--accent);opacity:.07;pointer-events:none;z-index:0;transition:background .3s }
+  .wrap{ position:relative;z-index:1 }
+  h1{ color:var(--accent);letter-spacing:.2px }
+  .card{ box-shadow:var(--shadow) }
+  button{ transition:transform .08s ease, box-shadow .2s, filter .2s }
+  button:not(.ghost):not(.chip):not(.tab):not(.cell):not(.x){ background-image:linear-gradient(180deg,var(--accent),var(--accent2));box-shadow:0 3px 12px rgba(0,0,0,.16) }
+  button:not(.ghost):not(.cell):hover{ filter:brightness(1.04) }
+  button:active{ transform:translateY(1px) }
+  .chip,.tab,.seg button,.game button,.cell,.x,.ghost{ background-image:none !important;box-shadow:none }
+  .seg button{ transition:background .15s }
+  .tab.on{ box-shadow:0 3px 12px rgba(0,0,0,.16) }
+  .game{ box-shadow:var(--shadow) }
+  .game button.on{ box-shadow:0 3px 12px rgba(0,0,0,.2) }
+  .game button{ transition:background .2s,color .2s,box-shadow .2s }
+  .cell{ transition:transform .1s ease }
+  .cell:hover{ transform:scale(1.12);z-index:2;position:relative }
+  .page.on{ animation:fade .25s ease }
+  @keyframes fade{ from{opacity:0;transform:translateY(5px)} to{opacity:1;transform:none} }
+  #latestCard{ position:relative;overflow:hidden }
+  #latestCard::before{ content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:linear-gradient(var(--accent),var(--gold)) }
+  .latest .first .num{ background:linear-gradient(180deg,#d9a93a,var(--gold));-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:none }
+  .pick{ transition:transform .15s, box-shadow .2s }
+  .pick .v{ background:linear-gradient(180deg,#d9a93a,#9a6f12);-webkit-background-clip:text;background-clip:text;color:transparent }
+  .go{ box-shadow:0 6px 18px rgba(0,0,0,.18) }
+  input,.sel{ transition:border-color .15s, box-shadow .15s }
+  .auth{ box-shadow:var(--shadow-lg,0 14px 40px rgba(31,35,40,.14)) }
+
+  /* ตรวจรางวัล */
+  .flbl{ display:block;font-size:13px;color:var(--muted);margin:14px 0 2px;font-weight:600 }
+  .sel{ width:100%;font-size:16px;padding:11px 10px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);font-family:inherit }
+  .sel:focus{ outline:2px solid var(--accent);outline-offset:-1px }
+  .result{ border-radius:16px;padding:22px 16px 20px;text-align:center;margin:14px 0 10px;box-shadow:var(--shadow);animation:pop .28s ease }
+  .result.win{ background:linear-gradient(165deg,var(--win-bg),var(--card));border:1px solid var(--win) }
+  .result.lose{ background:linear-gradient(165deg,var(--lose-bg),var(--card));border:1px solid var(--line) }
+  .result .rbig{ font-size:46px;line-height:1 }
+  .result .rhead{ font-size:19px;font-weight:800;margin-top:4px }
+  .result.win .rhead{ color:var(--win) }
+  .result .rnum{ font-size:34px;font-weight:800;letter-spacing:5px;font-variant-numeric:tabular-nums;margin:8px 0 2px }
+  .prizes{ list-style:none;margin:14px auto 0;padding:0;max-width:340px;text-align:left }
+  .prizes li{ display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 2px;border-bottom:1px dashed var(--line);font-size:15px }
+  .prizes li:last-child{ border-bottom:0 }
+  .prizes li b{ color:var(--win);font-variant-numeric:tabular-nums;white-space:nowrap }
+  .rtotal{ margin-top:14px;font-size:19px;font-weight:800;color:var(--win) }
+  @keyframes pop{ from{transform:scale(.92);opacity:0} to{transform:scale(1);opacity:1} }
+
+  /* ───── design refresh: SVG icons · focus · motion ───── */
+  .ic{ width:18px;height:18px;flex:0 0 auto;vertical-align:-4px;margin-right:6px }
+  .tab{ display:inline-flex;align-items:center;justify-content:center;gap:0;font-weight:600 }
+  .tab .ic{ width:17px;height:17px;margin-right:5px;opacity:.85 }
+  .tab.on .ic{ opacity:1 }
+  .go{ display:flex;align-items:center;justify-content:center }
+  .go .ic{ width:22px;height:22px;margin-right:8px }
+  h3 .ic{ color:var(--accent) }
+  h1.brandline{ display:flex;align-items:center;gap:10px }
+  .logo-slot svg{ width:34px;height:34px;display:block;filter:drop-shadow(0 2px 4px rgba(0,0,0,.18)) }
+  .auth .logo-slot svg{ width:40px;height:40px }
+  summary .ic{ color:var(--accent) }
+  #logoutBtn{ display:inline-flex;align-items:center }
+  #logoutBtn .ic{ width:15px;height:15px;margin-right:4px }
+  h1{ font-weight:800;letter-spacing:-.2px }
+  h3{ font-weight:700;letter-spacing:-.1px }
+  .card{ border-color:var(--line) }
+  .latest .num, .pick .v, .rnum, .tk .n, .tnum, .cell, .list b{ font-feature-settings:"tnum" 1 }
+  select, .cell, summary, .chip, .tab, label{ cursor:pointer }
+  button:focus-visible, .sel:focus-visible, input:focus-visible, summary:focus-visible, .cell:focus-visible{
+    outline:3px solid var(--accent);outline-offset:2px }
+  @media (prefers-reduced-motion: reduce){
+    *,*::before,*::after{ animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important;scroll-behavior:auto !important }
+    .cell:hover{ transform:none }
+  }
+  /* ───── พื้นหลังลายสลาก (ออกแบบเอง ไม่ใช่สลากจริง) ───── */
+  :root{ --ticket-bg:url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22480%22 height=%22400%22 viewBox=%220 0 480 400%22%3E%3Cg transform=%22translate%28118 82%29 rotate%28-10%29%22%3E%3Crect x=%22-92%22 y=%22-44%22 width=%22184%22 height=%2288%22 rx=%229%22 fill=%22%23fffbf3%22 stroke=%22%23f0e3c4%22 stroke-width=%221.5%22/%3E%3Ccircle cx=%22-92%22 cy=%220%22 r=%228%22 fill=%22%23f6f4ef%22 stroke=%22%23f0e3c4%22 stroke-width=%221.5%22/%3E%3Ccircle cx=%2292%22 cy=%220%22 r=%228%22 fill=%22%23f6f4ef%22 stroke=%22%23f0e3c4%22 stroke-width=%221.5%22/%3E%3Cline x1=%2244%22 y1=%22-36%22 x2=%2244%22 y2=%2236%22 stroke=%22%23f0e3c4%22 stroke-width=%221.5%22 stroke-dasharray=%224 4%22/%3E%3Ctext x=%22-24%22 y=%229%22 text-anchor=%22middle%22 font-family=%22ui-monospace,Menlo,monospace%22 font-size=%2224%22 font-weight=%22700%22 letter-spacing=%222%22 fill=%22%23e6d3a6%22%3E787789%3C/text%3E%3Crect x=%22-74%22 y=%22-32%22 width=%2256%22 height=%227%22 rx=%223.5%22 fill=%22%23f0e3c4%22/%3E%3Crect x=%22-74%22 y=%2222%22 width=%22100%22 height=%225%22 rx=%222.5%22 fill=%22%23f0e3c4%22/%3E%3Cpath d=%22M68 -10 l3.2 6.6 7.2 1 -5.2 5 1.3 7.2 -6.5 -3.4 -6.5 3.4 1.3 -7.2 -5.2 -5 7.2 -1z%22 fill=%22%23eedcae%22/%3E%3C/g%3E%3Cg transform=%22translate%28362 118%29 rotate%288%29%22%3E%3Crect x=%22-92%22 y=%22-44%22 width=%22184%22 height=%2288%22 rx=%229%22 fill=%22%23fffbf3%22 stroke=%22%23f0e3c4%22 stroke-width=%221.5%22/%3E%3Ccircle cx=%22-92%22 cy=%220%22 r=%228%22 fill=%22%23f6f4ef%22 stroke=%22%23f0e3c4%22 stroke-width=%221.5%22/%3E%3Ccircle cx=%2292%22 cy=%220%22 r=%228%22 fill=%22%23f6f4ef%22 stroke=%22%23f0e3c4%22 stroke-width=%221.5%22/%3E%3Cline x1=%2244%22 y1=%22-36%22 x2=%2244%22 y2=%2236%22 stroke=%22%23f0e3c4%22 stroke-width=%221.5%22 stroke-dasharray=%224 4%22/%3E%3Ctext x=%22-24%22 y=%229%22 text-anchor=%22middle%22 font-family=%22ui-monospace,Menlo,monospace%22 font-size=%2224%22 font-weight=%22700%22 letter-spacing=%222%22 fill=%22%23e6d3a6%22%3E328792%3C/text%3E%3Crect x=%22-74%22 y=%22-32%22 width=%2256%22 height=%227%22 rx=%223.5%22 fill=%22%23f0e3c4%22/%3E%3Crect x=%22-74%22 y=%2222%22 width=%22100%22 height=%225%22 rx=%222.5%22 fill=%22%23f0e3c4%22/%3E%3Cpath d=%22M68 -10 l3.2 6.6 7.2 1 -5.2 5 1.3 7.2 -6.5 -3.4 -6.5 3.4 1.3 -7.2 -5.2 -5 7.2 -1z%22 fill=%22%23eedcae%22/%3E%3C/g%3E%3Cg transform=%22translate%28128 300%29 rotate%286%29%22%3E%3Crect x=%22-92%22 y=%22-44%22 width=%22184%22 height=%2288%22 rx=%229%22 fill=%22%23fffbf3%22 stroke=%22%23f0e3c4%22 stroke-width=%221.5%22/%3E%3Ccircle cx=%22-92%22 cy=%220%22 r=%228%22 fill=%22%23f6f4ef%22 stroke=%22%23f0e3c4%22 stroke-width=%221.5%22/%3E%3Ccircle cx=%2292%22 cy=%220%22 r=%228%22 fill=%22%23f6f4ef%22 stroke=%22%23f0e3c4%22 stroke-width=%221.5%22/%3E%3Cline x1=%2244%22 y1=%22-36%22 x2=%2244%22 y2=%2236%22 stroke=%22%23f0e3c4%22 stroke-width=%221.5%22 stroke-dasharray=%224 4%22/%3E%3Ctext x=%22-24%22 y=%229%22 text-anchor=%22middle%22 font-family=%22ui-monospace,Menlo,monospace%22 font-size=%2224%22 font-weight=%22700%22 letter-spacing=%222%22 fill=%22%23e6d3a6%22%3E174218%3C/text%3E%3Crect x=%22-74%22 y=%22-32%22 width=%2256%22 height=%227%22 rx=%223.5%22 fill=%22%23f0e3c4%22/%3E%3Crect x=%22-74%22 y=%2222%22 width=%22100%22 height=%225%22 rx=%222.5%22 fill=%22%23f0e3c4%22/%3E%3Cpath d=%22M68 -10 l3.2 6.6 7.2 1 -5.2 5 1.3 7.2 -6.5 -3.4 -6.5 3.4 1.3 -7.2 -5.2 -5 7.2 -1z%22 fill=%22%23eedcae%22/%3E%3C/g%3E%3Cg transform=%22translate%28358 318%29 rotate%28-11%29%22%3E%3Crect x=%22-92%22 y=%22-44%22 width=%22184%22 height=%2288%22 rx=%229%22 fill=%22%23fffbf3%22 stroke=%22%23f0e3c4%22 stroke-width=%221.5%22/%3E%3Ccircle cx=%22-92%22 cy=%220%22 r=%228%22 fill=%22%23f6f4ef%22 stroke=%22%23f0e3c4%22 stroke-width=%221.5%22/%3E%3Ccircle cx=%2292%22 cy=%220%22 r=%228%22 fill=%22%23f6f4ef%22 stroke=%22%23f0e3c4%22 stroke-width=%221.5%22/%3E%3Cline x1=%2244%22 y1=%22-36%22 x2=%2244%22 y2=%2236%22 stroke=%22%23f0e3c4%22 stroke-width=%221.5%22 stroke-dasharray=%224 4%22/%3E%3Ctext x=%22-24%22 y=%229%22 text-anchor=%22middle%22 font-family=%22ui-monospace,Menlo,monospace%22 font-size=%2224%22 font-weight=%22700%22 letter-spacing=%222%22 fill=%22%23e6d3a6%22%3E096792%3C/text%3E%3Crect x=%22-74%22 y=%22-32%22 width=%2256%22 height=%227%22 rx=%223.5%22 fill=%22%23f0e3c4%22/%3E%3Crect x=%22-74%22 y=%2222%22 width=%22100%22 height=%225%22 rx=%222.5%22 fill=%22%23f0e3c4%22/%3E%3Cpath d=%22M68 -10 l3.2 6.6 7.2 1 -5.2 5 1.3 7.2 -6.5 -3.4 -6.5 3.4 1.3 -7.2 -5.2 -5 7.2 -1z%22 fill=%22%23eedcae%22/%3E%3C/g%3E%3C/svg%3E"); }
+  :root[data-theme="dark"]{ --ticket-bg:url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22480%22 height=%22400%22 viewBox=%220 0 480 400%22%3E%3Cg transform=%22translate%28118 82%29 rotate%28-10%29%22%3E%3Crect x=%22-92%22 y=%22-44%22 width=%22184%22 height=%2288%22 rx=%229%22 fill=%22%231b1c20%22 stroke=%22%232e2b26%22 stroke-width=%221.5%22/%3E%3Ccircle cx=%22-92%22 cy=%220%22 r=%228%22 fill=%22%2317181b%22 stroke=%22%232e2b26%22 stroke-width=%221.5%22/%3E%3Ccircle cx=%2292%22 cy=%220%22 r=%228%22 fill=%22%2317181b%22 stroke=%22%232e2b26%22 stroke-width=%221.5%22/%3E%3Cline x1=%2244%22 y1=%22-36%22 x2=%2244%22 y2=%2236%22 stroke=%22%232e2b26%22 stroke-width=%221.5%22 stroke-dasharray=%224 4%22/%3E%3Ctext x=%22-24%22 y=%229%22 text-anchor=%22middle%22 font-family=%22ui-monospace,Menlo,monospace%22 font-size=%2224%22 font-weight=%22700%22 letter-spacing=%222%22 fill=%22%233d382e%22%3E787789%3C/text%3E%3Crect x=%22-74%22 y=%22-32%22 width=%2256%22 height=%227%22 rx=%223.5%22 fill=%22%232e2b26%22/%3E%3Crect x=%22-74%22 y=%2222%22 width=%22100%22 height=%225%22 rx=%222.5%22 fill=%22%232e2b26%22/%3E%3Cpath d=%22M68 -10 l3.2 6.6 7.2 1 -5.2 5 1.3 7.2 -6.5 -3.4 -6.5 3.4 1.3 -7.2 -5.2 -5 7.2 -1z%22 fill=%22%233d382e%22/%3E%3C/g%3E%3Cg transform=%22translate%28362 118%29 rotate%288%29%22%3E%3Crect x=%22-92%22 y=%22-44%22 width=%22184%22 height=%2288%22 rx=%229%22 fill=%22%231b1c20%22 stroke=%22%232e2b26%22 stroke-width=%221.5%22/%3E%3Ccircle cx=%22-92%22 cy=%220%22 r=%228%22 fill=%22%2317181b%22 stroke=%22%232e2b26%22 stroke-width=%221.5%22/%3E%3Ccircle cx=%2292%22 cy=%220%22 r=%228%22 fill=%22%2317181b%22 stroke=%22%232e2b26%22 stroke-width=%221.5%22/%3E%3Cline x1=%2244%22 y1=%22-36%22 x2=%2244%22 y2=%2236%22 stroke=%22%232e2b26%22 stroke-width=%221.5%22 stroke-dasharray=%224 4%22/%3E%3Ctext x=%22-24%22 y=%229%22 text-anchor=%22middle%22 font-family=%22ui-monospace,Menlo,monospace%22 font-size=%2224%22 font-weight=%22700%22 letter-spacing=%222%22 fill=%22%233d382e%22%3E328792%3C/text%3E%3Crect x=%22-74%22 y=%22-32%22 width=%2256%22 height=%227%22 rx=%223.5%22 fill=%22%232e2b26%22/%3E%3Crect x=%22-74%22 y=%2222%22 width=%22100%22 height=%225%22 rx=%222.5%22 fill=%22%232e2b26%22/%3E%3Cpath d=%22M68 -10 l3.2 6.6 7.2 1 -5.2 5 1.3 7.2 -6.5 -3.4 -6.5 3.4 1.3 -7.2 -5.2 -5 7.2 -1z%22 fill=%22%233d382e%22/%3E%3C/g%3E%3Cg transform=%22translate%28128 300%29 rotate%286%29%22%3E%3Crect x=%22-92%22 y=%22-44%22 width=%22184%22 height=%2288%22 rx=%229%22 fill=%22%231b1c20%22 stroke=%22%232e2b26%22 stroke-width=%221.5%22/%3E%3Ccircle cx=%22-92%22 cy=%220%22 r=%228%22 fill=%22%2317181b%22 stroke=%22%232e2b26%22 stroke-width=%221.5%22/%3E%3Ccircle cx=%2292%22 cy=%220%22 r=%228%22 fill=%22%2317181b%22 stroke=%22%232e2b26%22 stroke-width=%221.5%22/%3E%3Cline x1=%2244%22 y1=%22-36%22 x2=%2244%22 y2=%2236%22 stroke=%22%232e2b26%22 stroke-width=%221.5%22 stroke-dasharray=%224 4%22/%3E%3Ctext x=%22-24%22 y=%229%22 text-anchor=%22middle%22 font-family=%22ui-monospace,Menlo,monospace%22 font-size=%2224%22 font-weight=%22700%22 letter-spacing=%222%22 fill=%22%233d382e%22%3E174218%3C/text%3E%3Crect x=%22-74%22 y=%22-32%22 width=%2256%22 height=%227%22 rx=%223.5%22 fill=%22%232e2b26%22/%3E%3Crect x=%22-74%22 y=%2222%22 width=%22100%22 height=%225%22 rx=%222.5%22 fill=%22%232e2b26%22/%3E%3Cpath d=%22M68 -10 l3.2 6.6 7.2 1 -5.2 5 1.3 7.2 -6.5 -3.4 -6.5 3.4 1.3 -7.2 -5.2 -5 7.2 -1z%22 fill=%22%233d382e%22/%3E%3C/g%3E%3Cg transform=%22translate%28358 318%29 rotate%28-11%29%22%3E%3Crect x=%22-92%22 y=%22-44%22 width=%22184%22 height=%2288%22 rx=%229%22 fill=%22%231b1c20%22 stroke=%22%232e2b26%22 stroke-width=%221.5%22/%3E%3Ccircle cx=%22-92%22 cy=%220%22 r=%228%22 fill=%22%2317181b%22 stroke=%22%232e2b26%22 stroke-width=%221.5%22/%3E%3Ccircle cx=%2292%22 cy=%220%22 r=%228%22 fill=%22%2317181b%22 stroke=%22%232e2b26%22 stroke-width=%221.5%22/%3E%3Cline x1=%2244%22 y1=%22-36%22 x2=%2244%22 y2=%2236%22 stroke=%22%232e2b26%22 stroke-width=%221.5%22 stroke-dasharray=%224 4%22/%3E%3Ctext x=%22-24%22 y=%229%22 text-anchor=%22middle%22 font-family=%22ui-monospace,Menlo,monospace%22 font-size=%2224%22 font-weight=%22700%22 letter-spacing=%222%22 fill=%22%233d382e%22%3E096792%3C/text%3E%3Crect x=%22-74%22 y=%22-32%22 width=%2256%22 height=%227%22 rx=%223.5%22 fill=%22%232e2b26%22/%3E%3Crect x=%22-74%22 y=%2222%22 width=%22100%22 height=%225%22 rx=%222.5%22 fill=%22%232e2b26%22/%3E%3Cpath d=%22M68 -10 l3.2 6.6 7.2 1 -5.2 5 1.3 7.2 -6.5 -3.4 -6.5 3.4 1.3 -7.2 -5.2 -5 7.2 -1z%22 fill=%22%233d382e%22/%3E%3C/g%3E%3C/svg%3E"); }
+  body{ background-color:var(--bg);background-image:var(--ticket-bg);background-size:480px 400px;background-attachment:fixed }
+  .sub,#meta,.who{ text-shadow:0 0 6px var(--bg),0 0 2px var(--bg) }
+  /* ───── v5: hero header · ไอคอนหนาขึ้น · ปุ่มธีม ───── */
+  body::before{ display:none }
+  .hero{ position:relative;overflow:hidden;align-items:center;padding:18px 16px 18px 18px;border-radius:20px;color:#fff;
+    background:radial-gradient(120% 140% at 0% 0%, #e0443c 0%, var(--accent) 45%, var(--accent2) 100%);
+    box-shadow:0 10px 28px rgba(142,26,23,.28) }
+  body.lao .hero{ background:radial-gradient(120% 140% at 0% 0%, #3b82d6 0%, var(--lao) 45%, var(--lao2) 100%);box-shadow:0 10px 28px rgba(24,74,134,.28) }
+  .hero::after{ content:"";position:absolute;right:-40px;top:-50px;width:170px;height:170px;border-radius:50%;
+    background:radial-gradient(circle, rgba(255,226,140,.38), rgba(255,226,140,0) 70%);pointer-events:none }
+  .hero::before{ content:"";position:absolute;left:38%;bottom:-70px;width:200px;height:120px;border-radius:50%;
+    background:radial-gradient(circle, rgba(255,255,255,.14), rgba(255,255,255,0) 70%);pointer-events:none }
+  .hero h1{ color:#fff;margin:0;font-size:24px }
+  .hero .who{ color:rgba(255,255,255,.9);text-shadow:none;margin-top:2px;font-size:14px }
+  .hero .logo-slot svg{ width:40px;height:40px;filter:drop-shadow(0 3px 6px rgba(0,0,0,.3)) }
+  .hero-acts{ display:flex;gap:8px;position:relative;z-index:1;flex:0 0 auto }
+  .hero .ghost{ color:#fff;border-color:rgba(255,255,255,.55);background:rgba(255,255,255,.12) !important;backdrop-filter:blur(2px) }
+  .hero .ghost:hover{ background:rgba(255,255,255,.22) !important }
+  .icon-only{ width:38px;height:38px;padding:0;display:inline-flex;align-items:center;justify-content:center }
+  .icon-only .ic{ margin:0;width:19px;height:19px }
+  #logoutBtn{ height:38px }
+  .ic{ width:20px;height:20px }
+  .tab .ic{ width:19px;height:19px;margin-right:6px }
+  .go .ic{ width:24px;height:24px }
+  .tab{ font-size:15px;padding:10px 12px }
+  .game button{ font-weight:700 }
+  #latestCard{ border:0;box-shadow:0 6px 22px rgba(31,35,40,.09) }
+  :root[data-theme="dark"] #latestCard{ box-shadow:var(--shadow) }
+  .hero h1, .hero .brand{ white-space:nowrap }
+  .hero .grow{ min-width:0 }
+  @media (max-width:520px){ #logoutBtn span{ display:none } #logoutBtn{ width:38px;padding:0;justify-content:center } #logoutBtn .ic{ margin:0;width:19px;height:19px } }
+  body.lao .hero::after{ background:radial-gradient(circle, rgba(255,255,255,.28), rgba(255,255,255,0) 70%) }
+  /* ═════ ธีม: เขียวมงคล โชคลาภ ═════ */
+  :root{ --bg:#f3f8f2;--ink:#14281d;--muted:#5d7166;--line:#dbe7dc;--accent:#0f8a4f;--accent2:#0a6438;--gold:#c9961f;
+    --soft:#fbf6e6;--soft-line:#ecdca6;--zero:#e9f0e8;--lose-bg:#eef3ee;
+    --s1:#d4efdd;--s2:#a8dfbc;--s3:#75c995;--s4:#43ad6f;--s5:#2a8f55;--s6:#1c7042;--s7:#0f5230;
+    --shadow:0 1px 2px rgba(20,40,29,.05),0 8px 24px rgba(20,40,29,.07);
+    --ticket-bg:url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22480%22 height=%22400%22 viewBox=%220 0 480 400%22%3E%3Cg transform=%22translate%28118 82%29 rotate%28-10%29%22%3E%3Crect x=%22-92%22 y=%22-44%22 width=%22184%22 height=%2288%22 rx=%229%22 fill=%22%23fafdf9%22 stroke=%22%23dcebdc%22 stroke-width=%221.5%22/%3E%3Ccircle cx=%22-92%22 cy=%220%22 r=%228%22 fill=%22%23f3f8f2%22 stroke=%22%23dcebdc%22 stroke-width=%221.5%22/%3E%3Ccircle cx=%2292%22 cy=%220%22 r=%228%22 fill=%22%23f3f8f2%22 stroke=%22%23dcebdc%22 stroke-width=%221.5%22/%3E%3Cline x1=%2244%22 y1=%22-36%22 x2=%2244%22 y2=%2236%22 stroke=%22%23dcebdc%22 stroke-width=%221.5%22 stroke-dasharray=%224 4%22/%3E%3Ctext x=%22-24%22 y=%229%22 text-anchor=%22middle%22 font-family=%22ui-monospace,Menlo,monospace%22 font-size=%2224%22 font-weight=%22700%22 letter-spacing=%222%22 fill=%22%23c9dfca%22%3E787789%3C/text%3E%3Crect x=%22-74%22 y=%22-32%22 width=%2256%22 height=%227%22 rx=%223.5%22 fill=%22%23dcebdc%22/%3E%3Crect x=%22-74%22 y=%2222%22 width=%22100%22 height=%225%22 rx=%222.5%22 fill=%22%23dcebdc%22/%3E%3Cpath d=%22M68 -10 l3.2 6.6 7.2 1 -5.2 5 1.3 7.2 -6.5 -3.4 -6.5 3.4 1.3 -7.2 -5.2 -5 7.2 -1z%22 fill=%22%23eadba8%22/%3E%3C/g%3E%3Cg transform=%22translate%28362 118%29 rotate%288%29%22%3E%3Crect x=%22-92%22 y=%22-44%22 width=%22184%22 height=%2288%22 rx=%229%22 fill=%22%23fafdf9%22 stroke=%22%23dcebdc%22 stroke-width=%221.5%22/%3E%3Ccircle cx=%22-92%22 cy=%220%22 r=%228%22 fill=%22%23f3f8f2%22 stroke=%22%23dcebdc%22 stroke-width=%221.5%22/%3E%3Ccircle cx=%2292%22 cy=%220%22 r=%228%22 fill=%22%23f3f8f2%22 stroke=%22%23dcebdc%22 stroke-width=%221.5%22/%3E%3Cline x1=%2244%22 y1=%22-36%22 x2=%2244%22 y2=%2236%22 stroke=%22%23dcebdc%22 stroke-width=%221.5%22 stroke-dasharray=%224 4%22/%3E%3Ctext x=%22-24%22 y=%229%22 text-anchor=%22middle%22 font-family=%22ui-monospace,Menlo,monospace%22 font-size=%2224%22 font-weight=%22700%22 letter-spacing=%222%22 fill=%22%23c9dfca%22%3E328792%3C/text%3E%3Crect x=%22-74%22 y=%22-32%22 width=%2256%22 height=%227%22 rx=%223.5%22 fill=%22%23dcebdc%22/%3E%3Crect x=%22-74%22 y=%2222%22 width=%22100%22 height=%225%22 rx=%222.5%22 fill=%22%23dcebdc%22/%3E%3Cpath d=%22M68 -10 l3.2 6.6 7.2 1 -5.2 5 1.3 7.2 -6.5 -3.4 -6.5 3.4 1.3 -7.2 -5.2 -5 7.2 -1z%22 fill=%22%23eadba8%22/%3E%3C/g%3E%3Cg transform=%22translate%28128 300%29 rotate%286%29%22%3E%3Crect x=%22-92%22 y=%22-44%22 width=%22184%22 height=%2288%22 rx=%229%22 fill=%22%23fafdf9%22 stroke=%22%23dcebdc%22 stroke-width=%221.5%22/%3E%3Ccircle cx=%22-92%22 cy=%220%22 r=%228%22 fill=%22%23f3f8f2%22 stroke=%22%23dcebdc%22 stroke-width=%221.5%22/%3E%3Ccircle cx=%2292%22 cy=%220%22 r=%228%22 fill=%22%23f3f8f2%22 stroke=%22%23dcebdc%22 stroke-width=%221.5%22/%3E%3Cline x1=%2244%22 y1=%22-36%22 x2=%2244%22 y2=%2236%22 stroke=%22%23dcebdc%22 stroke-width=%221.5%22 stroke-dasharray=%224 4%22/%3E%3Ctext x=%22-24%22 y=%229%22 text-anchor=%22middle%22 font-family=%22ui-monospace,Menlo,monospace%22 font-size=%2224%22 font-weight=%22700%22 letter-spacing=%222%22 fill=%22%23c9dfca%22%3E174218%3C/text%3E%3Crect x=%22-74%22 y=%22-32%22 width=%2256%22 height=%227%22 rx=%223.5%22 fill=%22%23dcebdc%22/%3E%3Crect x=%22-74%22 y=%2222%22 width=%22100%22 height=%225%22 rx=%222.5%22 fill=%22%23dcebdc%22/%3E%3Cpath d=%22M68 -10 l3.2 6.6 7.2 1 -5.2 5 1.3 7.2 -6.5 -3.4 -6.5 3.4 1.3 -7.2 -5.2 -5 7.2 -1z%22 fill=%22%23eadba8%22/%3E%3C/g%3E%3Cg transform=%22translate%28358 318%29 rotate%28-11%29%22%3E%3Crect x=%22-92%22 y=%22-44%22 width=%22184%22 height=%2288%22 rx=%229%22 fill=%22%23fafdf9%22 stroke=%22%23dcebdc%22 stroke-width=%221.5%22/%3E%3Ccircle cx=%22-92%22 cy=%220%22 r=%228%22 fill=%22%23f3f8f2%22 stroke=%22%23dcebdc%22 stroke-width=%221.5%22/%3E%3Ccircle cx=%2292%22 cy=%220%22 r=%228%22 fill=%22%23f3f8f2%22 stroke=%22%23dcebdc%22 stroke-width=%221.5%22/%3E%3Cline x1=%2244%22 y1=%22-36%22 x2=%2244%22 y2=%2236%22 stroke=%22%23dcebdc%22 stroke-width=%221.5%22 stroke-dasharray=%224 4%22/%3E%3Ctext x=%22-24%22 y=%229%22 text-anchor=%22middle%22 font-family=%22ui-monospace,Menlo,monospace%22 font-size=%2224%22 font-weight=%22700%22 letter-spacing=%222%22 fill=%22%23c9dfca%22%3E096792%3C/text%3E%3Crect x=%22-74%22 y=%22-32%22 width=%2256%22 height=%227%22 rx=%223.5%22 fill=%22%23dcebdc%22/%3E%3Crect x=%22-74%22 y=%2222%22 width=%22100%22 height=%225%22 rx=%222.5%22 fill=%22%23dcebdc%22/%3E%3Cpath d=%22M68 -10 l3.2 6.6 7.2 1 -5.2 5 1.3 7.2 -6.5 -3.4 -6.5 3.4 1.3 -7.2 -5.2 -5 7.2 -1z%22 fill=%22%23eadba8%22/%3E%3C/g%3E%3C/svg%3E"); }
+  :root[data-theme="dark"]{ --bg:#0f1512;--card:#18201b;--ink:#e8f0ea;--muted:#9fb1a5;--line:#26332b;--accent:#2fbf7a;--accent2:#1d8a55;
+    --gold:#e6c25a;--soft:#1f2016;--soft-line:#4a4320;--zero:#202a24;--lose-bg:#1f2822;
+    --s1:#0f3d26;--s2:#145233;--s3:#1a6a42;--s4:#23875a;--s5:#3aa774;--s6:#6cc69a;--s7:#a8e2c3;
+    --ticket-bg:url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22480%22 height=%22400%22 viewBox=%220 0 480 400%22%3E%3Cg transform=%22translate%28118 82%29 rotate%28-10%29%22%3E%3Crect x=%22-92%22 y=%22-44%22 width=%22184%22 height=%2288%22 rx=%229%22 fill=%22%23141c17%22 stroke=%22%2322302a%22 stroke-width=%221.5%22/%3E%3Ccircle cx=%22-92%22 cy=%220%22 r=%228%22 fill=%22%230f1512%22 stroke=%22%2322302a%22 stroke-width=%221.5%22/%3E%3Ccircle cx=%2292%22 cy=%220%22 r=%228%22 fill=%22%230f1512%22 stroke=%22%2322302a%22 stroke-width=%221.5%22/%3E%3Cline x1=%2244%22 y1=%22-36%22 x2=%2244%22 y2=%2236%22 stroke=%22%2322302a%22 stroke-width=%221.5%22 stroke-dasharray=%224 4%22/%3E%3Ctext x=%22-24%22 y=%229%22 text-anchor=%22middle%22 font-family=%22ui-monospace,Menlo,monospace%22 font-size=%2224%22 font-weight=%22700%22 letter-spacing=%222%22 fill=%22%232c3b33%22%3E787789%3C/text%3E%3Crect x=%22-74%22 y=%22-32%22 width=%2256%22 height=%227%22 rx=%223.5%22 fill=%22%2322302a%22/%3E%3Crect x=%22-74%22 y=%2222%22 width=%22100%22 height=%225%22 rx=%222.5%22 fill=%22%2322302a%22/%3E%3Cpath d=%22M68 -10 l3.2 6.6 7.2 1 -5.2 5 1.3 7.2 -6.5 -3.4 -6.5 3.4 1.3 -7.2 -5.2 -5 7.2 -1z%22 fill=%22%233a3826%22/%3E%3C/g%3E%3Cg transform=%22translate%28362 118%29 rotate%288%29%22%3E%3Crect x=%22-92%22 y=%22-44%22 width=%22184%22 height=%2288%22 rx=%229%22 fill=%22%23141c17%22 stroke=%22%2322302a%22 stroke-width=%221.5%22/%3E%3Ccircle cx=%22-92%22 cy=%220%22 r=%228%22 fill=%22%230f1512%22 stroke=%22%2322302a%22 stroke-width=%221.5%22/%3E%3Ccircle cx=%2292%22 cy=%220%22 r=%228%22 fill=%22%230f1512%22 stroke=%22%2322302a%22 stroke-width=%221.5%22/%3E%3Cline x1=%2244%22 y1=%22-36%22 x2=%2244%22 y2=%2236%22 stroke=%22%2322302a%22 stroke-width=%221.5%22 stroke-dasharray=%224 4%22/%3E%3Ctext x=%22-24%22 y=%229%22 text-anchor=%22middle%22 font-family=%22ui-monospace,Menlo,monospace%22 font-size=%2224%22 font-weight=%22700%22 letter-spacing=%222%22 fill=%22%232c3b33%22%3E328792%3C/text%3E%3Crect x=%22-74%22 y=%22-32%22 width=%2256%22 height=%227%22 rx=%223.5%22 fill=%22%2322302a%22/%3E%3Crect x=%22-74%22 y=%2222%22 width=%22100%22 height=%225%22 rx=%222.5%22 fill=%22%2322302a%22/%3E%3Cpath d=%22M68 -10 l3.2 6.6 7.2 1 -5.2 5 1.3 7.2 -6.5 -3.4 -6.5 3.4 1.3 -7.2 -5.2 -5 7.2 -1z%22 fill=%22%233a3826%22/%3E%3C/g%3E%3Cg transform=%22translate%28128 300%29 rotate%286%29%22%3E%3Crect x=%22-92%22 y=%22-44%22 width=%22184%22 height=%2288%22 rx=%229%22 fill=%22%23141c17%22 stroke=%22%2322302a%22 stroke-width=%221.5%22/%3E%3Ccircle cx=%22-92%22 cy=%220%22 r=%228%22 fill=%22%230f1512%22 stroke=%22%2322302a%22 stroke-width=%221.5%22/%3E%3Ccircle cx=%2292%22 cy=%220%22 r=%228%22 fill=%22%230f1512%22 stroke=%22%2322302a%22 stroke-width=%221.5%22/%3E%3Cline x1=%2244%22 y1=%22-36%22 x2=%2244%22 y2=%2236%22 stroke=%22%2322302a%22 stroke-width=%221.5%22 stroke-dasharray=%224 4%22/%3E%3Ctext x=%22-24%22 y=%229%22 text-anchor=%22middle%22 font-family=%22ui-monospace,Menlo,monospace%22 font-size=%2224%22 font-weight=%22700%22 letter-spacing=%222%22 fill=%22%232c3b33%22%3E174218%3C/text%3E%3Crect x=%22-74%22 y=%22-32%22 width=%2256%22 height=%227%22 rx=%223.5%22 fill=%22%2322302a%22/%3E%3Crect x=%22-74%22 y=%2222%22 width=%22100%22 height=%225%22 rx=%222.5%22 fill=%22%2322302a%22/%3E%3Cpath d=%22M68 -10 l3.2 6.6 7.2 1 -5.2 5 1.3 7.2 -6.5 -3.4 -6.5 3.4 1.3 -7.2 -5.2 -5 7.2 -1z%22 fill=%22%233a3826%22/%3E%3C/g%3E%3Cg transform=%22translate%28358 318%29 rotate%28-11%29%22%3E%3Crect x=%22-92%22 y=%22-44%22 width=%22184%22 height=%2288%22 rx=%229%22 fill=%22%23141c17%22 stroke=%22%2322302a%22 stroke-width=%221.5%22/%3E%3Ccircle cx=%22-92%22 cy=%220%22 r=%228%22 fill=%22%230f1512%22 stroke=%22%2322302a%22 stroke-width=%221.5%22/%3E%3Ccircle cx=%2292%22 cy=%220%22 r=%228%22 fill=%22%230f1512%22 stroke=%22%2322302a%22 stroke-width=%221.5%22/%3E%3Cline x1=%2244%22 y1=%22-36%22 x2=%2244%22 y2=%2236%22 stroke=%22%2322302a%22 stroke-width=%221.5%22 stroke-dasharray=%224 4%22/%3E%3Ctext x=%22-24%22 y=%229%22 text-anchor=%22middle%22 font-family=%22ui-monospace,Menlo,monospace%22 font-size=%2224%22 font-weight=%22700%22 letter-spacing=%222%22 fill=%22%232c3b33%22%3E096792%3C/text%3E%3Crect x=%22-74%22 y=%22-32%22 width=%2256%22 height=%227%22 rx=%223.5%22 fill=%22%2322302a%22/%3E%3Crect x=%22-74%22 y=%2222%22 width=%22100%22 height=%225%22 rx=%222.5%22 fill=%22%2322302a%22/%3E%3Cpath d=%22M68 -10 l3.2 6.6 7.2 1 -5.2 5 1.3 7.2 -6.5 -3.4 -6.5 3.4 1.3 -7.2 -5.2 -5 7.2 -1z%22 fill=%22%233a3826%22/%3E%3C/g%3E%3C/svg%3E"); }
+  body{ background-image:radial-gradient(700px 420px at 100% 0%,rgba(150,215,165,.35),transparent 60%),var(--ticket-bg) !important;
+    background-size:auto,480px 400px !important;background-attachment:fixed !important }
+  :root[data-theme="dark"] body{ background-image:radial-gradient(700px 420px at 100% 0%,rgba(47,191,122,.12),transparent 60%),var(--ticket-bg) !important }
+  .hero{ background:radial-gradient(120% 140% at 0% 0%, #22b46c 0%, #0f8a4f 45%, #0a6438 100%);box-shadow:0 10px 28px rgba(10,100,56,.3) }
+  .hero::after{ background:radial-gradient(circle, rgba(255,226,140,.5), rgba(255,226,140,0) 70%) }
+  .game button.on.th{ background:#0f8a4f }
+  :root[data-theme="dark"] .game button.on.th{ background:#1d8a55 }
+  .result.win{ border-color:#0f8a4f }
+  /* ───── LINE แจ้งผล ───── */
+  .moved{ color:var(--pend);font-weight:600 }
+  .line-btn{ background-image:none !important;background:#06c755 !important;color:#fff;display:inline-flex;align-items:center;gap:6px;box-shadow:0 3px 12px rgba(6,199,85,.3) !important }
+  .line-ok{ display:flex;align-items:center;gap:10px;padding:12px;border-radius:12px;background:var(--win-bg);color:var(--win);font-weight:700 }
+  .line-code{ font-size:34px;font-weight:800;letter-spacing:6px;text-align:center;padding:12px;border:2px dashed var(--line);border-radius:14px;margin:8px 0;font-feature-settings:"tnum" 1;user-select:all }
+  .steps{ margin:8px 0 0;padding-left:20px;font-size:14px;line-height:1.7 }
+  .steps a{ color:#06c755;text-decoration:underline;text-underline-offset:3px }
+  .webhook{ margin-top:12px;padding:10px;border-radius:12px;background:var(--soft);border:1px solid var(--soft-line) }
+  #webhookUrl{ font-size:13px }
+  /* ───── เลขเด็ดประจำงวด ───── */
+  .tips-hero{ text-align:center;padding:18px 14px;background:linear-gradient(160deg,var(--soft),var(--card));border:1px solid var(--soft-line) }
+  .tips-hero .k{ font-size:13px;color:var(--muted) }
+  .tips-hero .t{ font-size:22px;font-weight:800;margin:2px 0 }
+  .runs{ display:grid;grid-template-columns:1fr 1fr;gap:10px }
+  .run{ border:1px solid var(--line);border-radius:14px;padding:12px;text-align:center }
+  .run .lbl{ font-size:13px;color:var(--muted);font-weight:600 }
+  .balls{ display:flex;justify-content:center;gap:8px;margin:8px 0 4px }
+  .ball{ width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;color:#5a3d00;
+    background:radial-gradient(circle at 35% 30%,#fff3c4,#f2c94c 55%,#c9961f);box-shadow:0 3px 8px rgba(0,0,0,.15),inset 0 -3px 6px rgba(0,0,0,.12) }
+  .ball.sm{ width:36px;height:36px;font-size:18px;opacity:.75 }
+  .run .why{ font-size:12px;color:var(--muted) }
+  .picks-grid{ display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px }
+  .picks-grid.three{ grid-template-columns:repeat(3,1fr) }
+  .pk{ border:1px solid var(--soft-line);background:var(--soft);border-radius:12px;padding:10px 6px;text-align:center }
+  .pk b{ display:block;font-size:28px;font-weight:800;letter-spacing:3px;font-feature-settings:"tnum" 1;
+    background:linear-gradient(180deg,#d9a93a,#9a6f12);-webkit-background-clip:text;background-clip:text;color:transparent }
+  .pk span{ font-size:11.5px;color:var(--muted);line-height:1.3;display:block }
+  .tod-set{ font-size:30px;font-weight:800;letter-spacing:8px;text-align:center;margin:6px 0 }
+  .perms{ display:flex;flex-wrap:wrap;gap:6px;justify-content:center }
+  .perms span{ padding:4px 10px;border-radius:99px;border:1px solid var(--line);font-weight:700;letter-spacing:2px;font-feature-settings:"tnum" 1 }
+  table.same{ width:100%;border-collapse:collapse;font-size:14px;margin-top:6px }
+  table.same th{ text-align:left;font-weight:600;color:var(--muted);font-size:12px;padding:6px 4px;border-bottom:1px solid var(--line) }
+  table.same td{ padding:7px 4px;border-bottom:1px dashed var(--line);font-feature-settings:"tnum" 1 }
+  table.same td b{ letter-spacing:1px }
+  .bt-row{ margin:10px 0 }
+  .bt-row .top{ display:flex;justify-content:space-between;font-size:14px;gap:8px }
+  .bt-row .top b{ white-space:nowrap }
+  .bars{ display:grid;gap:4px;margin-top:5px }
+  .bar{ position:relative;height:10px;border-radius:99px;background:var(--zero);overflow:hidden }
+  .bar i{ position:absolute;left:0;top:0;bottom:0;border-radius:99px }
+  .bar.me i{ background:var(--accent) }
+  .bar.rnd i{ background:var(--muted);opacity:.55 }
+  .bar-lbl{ display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted) }
+  .verdict{ margin-top:10px;padding:10px 12px;border-radius:12px;background:var(--lose-bg);font-size:13.5px;line-height:1.55 }
+  .hit{ color:var(--win);font-weight:700 } .miss{ color:var(--muted) }
+  /* ───── ธง SVG · แถบแท็บ · ข้อความ error ───── */
+  .flag{ width:24px;height:16px;border-radius:3px;margin-right:8px;vertical-align:-3px;box-shadow:0 0 0 1px rgba(0,0,0,.12) }
+  .game button{ display:inline-flex;align-items:center;justify-content:center }
+  .tabs{ scrollbar-width:none;-ms-overflow-style:none }
+  .tabs::-webkit-scrollbar{ display:none }
+  @media (min-width:700px){ .tabs{ flex-wrap:wrap;overflow:visible } .tab{ flex:0 0 auto } }
+  .err{ color:#c62828 !important }
+  :root[data-theme="dark"] .err{ color:#ff8a80 !important }
+  /* ───── สลาก N3 (ส้มทอง) ───── */
+  :root{ --n3:#d9480f; --n3b:#a8360a }
+  :root[data-theme="dark"]{ --n3:#ff8a4c; --n3b:#c4541c }
+  .game{ grid-template-columns:1fr 1fr 1fr }
+  .game button{ font-size:15px;padding:10px 6px;white-space:nowrap }
+  .game button.on.n3{ background:var(--n3);color:#fff }
+  body.n3{ --accent:var(--n3); --accent2:var(--n3b) }
+  body.n3 .hero{ background:radial-gradient(120% 140% at 0% 0%, #f59f00 0%, var(--n3) 48%, var(--n3b) 100%);box-shadow:0 10px 28px rgba(168,54,10,.28) }
+  .n3tag{ display:inline-block;font:800 10px/1 system-ui;background:#fff;color:var(--n3);border-radius:4px;padding:3px 4px;margin-right:6px;box-shadow:0 0 0 1.5px var(--n3) }
+  .game button.on .n3tag{ box-shadow:none }
+  .latest.n3g .sw{ font-size:15px;letter-spacing:1px }
+  .latest .amt{ font-size:12px;font-weight:600;opacity:.8;margin-top:2px }
+  .paytbl{ width:100%;border-collapse:collapse;font-size:13px }
+  .paytbl th,.paytbl td{ padding:7px 4px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap }
+  .paytbl th:first-child,.paytbl td:first-child{ text-align:left }
+  .paytbl th{ color:var(--muted);font-weight:600 }
+  .paywrap{ overflow-x:auto }
+  @media (max-width:420px){ .game button{ font-size:13px } .game .flag{ width:20px;height:13px;margin-right:5px } }
+  /* ───── จำนวนใบ + ควรตามเลขไหม ───── */
+  .tqty{ flex:0 0 74px;width:74px;text-align:center }
+  .qty{ display:inline-flex;align-items:center;gap:2px;margin-top:4px }
+  .qty button{ width:28px;height:28px;padding:0;border-radius:8px;font-size:16px;font-weight:800;line-height:1;background:var(--card) !important;background-image:none !important;color:var(--accent) !important;border:1.5px solid var(--line) !important;box-shadow:none !important }
+  .qty button:disabled{ opacity:.35 }
+  .qty span{ min-width:46px;text-align:center;font-size:13px;font-weight:700 }
+  .fl{ border:1px solid var(--line);border-radius:14px;padding:12px;margin-top:10px }
+  .fl .top{ display:flex;align-items:center;gap:8px;flex-wrap:wrap }
+  .fl .n{ color:var(--ink);font-size:22px;font-weight:800;letter-spacing:3px;font-feature-settings:"tnum" 1 }
+  .fl .q{ font-size:13px;color:var(--muted);font-weight:600 }
+  .fl .vd{ margin-left:auto;font-size:13px;font-weight:800;padding:5px 11px;border-radius:99px;white-space:nowrap }
+  .vd.follow{ background:var(--win-bg);color:var(--win) } .vd.maybe{ background:var(--pend-bg);color:var(--pend) } .vd.skip{ background:var(--lose-bg);color:var(--muted) }
+  .fl ul{ margin:8px 0 0;padding:0;list-style:none;font-size:13px }
+  .fl li{ display:flex;justify-content:space-between;gap:10px;padding:5px 0;border-top:1px dashed var(--line) }
+  .fl li span:first-child{ color:var(--muted) } .fl li b{ text-align:right }
+  .fl .why{ margin-top:8px;font-size:12px;color:var(--muted) }
+  .dots{ display:inline-flex;gap:3px;vertical-align:middle;margin-left:4px } .dots i{ width:7px;height:7px;border-radius:50%;background:var(--line) } .dots i.on{ background:var(--accent) }
+  /* ───── สรุปเงิน ───── */
+  .mhero{ display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center;margin-top:10px }
+  .mhero div{ background:var(--soft);border-radius:12px;padding:10px 4px }
+  .mhero b{ display:block;font-size:20px;font-feature-settings:"tnum" 1 }
+  .mhero > div > span{ font-size:12px;color:var(--muted) }
+  .pos{ color:var(--win) } .neg{ color:#c62828 }
+  :root[data-theme="dark"] .neg{ color:#ff7b72 }
+  .bar{ height:12px;border-radius:99px;background:var(--line);overflow:hidden;margin-top:12px }
+  .bar i{ display:block;height:100%;border-radius:99px;background:var(--accent);transition:width .4s }
+  .bar.warn i{ background:#e8a317 } .bar.over i{ background:#c62828 }
+  .barlbl{ display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-top:6px }
+  .mchart{ width:100%;height:auto;display:block;margin-top:8px }
+  .mchart .g text{ font-size:10px;fill:var(--muted) }
+  .mchart .grid{ stroke:var(--line);stroke-width:1 }
+  .mchart .sp{ fill:#8a94a6 } .mchart .wn{ fill:var(--win) }
+  .mchart rect.hit{ fill:transparent;cursor:pointer } .mchart rect.hit:hover{ fill:rgba(127,127,127,.08) }
+  .lgd{ display:flex;gap:14px;font-size:12px;color:var(--muted);margin-top:6px }
+  .lgd i{ display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px }
+  .mtbl{ width:100%;border-collapse:collapse;font-size:13px;margin-top:6px }
+  .mtbl th,.mtbl td{ padding:8px 4px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap;font-feature-settings:"tnum" 1 }
+  .mtbl th:first-child,.mtbl td:first-child{ text-align:left } .mtbl th{ color:var(--muted);font-weight:600 }
+  .cmds{ margin:8px 0 0;padding-left:18px;font-size:13px;line-height:1.8 } .cmds code{ background:var(--soft);border-radius:6px;padding:1px 6px;font-weight:700 }
+  .toggle{ display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;font-size:14px }
+  .toggle input{ flex:0 0 22px;width:22px !important;height:22px !important;min-height:0 !important;padding:0 !important;margin:0;border:0 !important;box-shadow:none !important;-webkit-appearance:checkbox;appearance:auto;accent-color:var(--accent) }
+  /* ───── ไอคอนสองโทน + แท็บป้ายสี (แบบ A) ───── */
+  .ic .d{ fill:currentColor;opacity:.2;stroke:none }
+  .ic .s{ fill:currentColor;stroke:none }
+  .tab[data-p="rand"]{--c:#7c4dff} .tab[data-p="tips"]{--c:#f05a1a} .tab[data-p="check"]{--c:#d99400} .tab[data-p="stats"]{--c:#1e7be0}
+  .tab[data-p="tix"]{--c:#e0457b} .tab[data-p="money"]{--c:#0f9d6b} .tab[data-p="find"]{--c:#0e9aa7} .tab[data-p="admin"]{--c:#5b6b82}
+  :root[data-theme="dark"] .tab[data-p="rand"]{--c:#a98bff} :root[data-theme="dark"] .tab[data-p="tips"]{--c:#ff8a50} :root[data-theme="dark"] .tab[data-p="check"]{--c:#f2c14e}
+  :root[data-theme="dark"] .tab[data-p="stats"]{--c:#6aaeff} :root[data-theme="dark"] .tab[data-p="tix"]{--c:#ff7aa6} :root[data-theme="dark"] .tab[data-p="money"]{--c:#3ccf93}
+  :root[data-theme="dark"] .tab[data-p="find"]{--c:#3cc8d4} :root[data-theme="dark"] .tab[data-p="admin"]{--c:#9fb0c8}
+  .tabs{ display:grid !important;grid-template-columns:repeat(4,1fr);gap:8px;overflow:visible !important;position:static;padding:4px 0;background:transparent }
+  .tab, .tab.on{ flex:none !important;display:flex !important;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:9px 2px !important;
+    border-radius:14px;background:var(--card) !important;color:var(--ink) !important;border:1.5px solid var(--line) !important;font-size:12.5px !important;font-weight:700;
+    box-shadow:0 1px 2px rgba(0,0,0,.04) !important;white-space:nowrap;min-width:0;transition:border-color .15s,box-shadow .15s,transform .15s }
+  .tab:hover{ border-color:color-mix(in srgb,var(--c) 45%,var(--line)) !important }
+  .tab.on{ border:2px solid var(--c) !important;background:color-mix(in srgb,var(--c) 6%,var(--card)) !important;box-shadow:0 4px 14px color-mix(in srgb,var(--c) 22%,transparent) !important }
+  .tchip{ width:32px;height:32px;border-radius:10px;display:grid;place-items:center;flex:0 0 32px;color:var(--c);background:color-mix(in srgb,var(--c) 14%,transparent) }
+  .tab .tchip .ic{ width:21px;height:21px;margin:0 !important;opacity:1 !important }
+  .tab.on .tchip{ background:color-mix(in srgb,var(--c) 22%,transparent) }
+  @media (min-width:560px){
+    .tabs{ position:sticky;top:0;z-index:5;background:var(--bg);padding:6px 0 }
+    .tab, .tab.on{ flex-direction:row;justify-content:flex-start;gap:9px;padding:7px 10px !important;font-size:14px !important }
+    .tchip{ width:30px;height:30px;flex-basis:30px }
+  }
+  /* ───── ฉลองถูกรางวัล ตามระดับรางวัล ───── */
+  .result.win{ position:relative;overflow:hidden;border:2px solid var(--tc) !important;
+    background:linear-gradient(165deg,color-mix(in srgb,var(--tc) 20%,var(--card)),var(--card) 70%) }
+  .result.t-jackpot{ --tc:#d99400 } .result.t-big{ --tc:#7c4dff } .result.t-mid{ --tc:#0f8a4f } .result.t-small{ --tc:#0e9aa7 }
+  :root[data-theme="dark"] .result.t-jackpot{ --tc:#f2c14e } :root[data-theme="dark"] .result.t-big{ --tc:#a98bff }
+  :root[data-theme="dark"] .result.t-mid{ --tc:#3ccf93 } :root[data-theme="dark"] .result.t-small{ --tc:#3cc8d4 }
+  .result.win .rhead{ color:var(--tc) !important;position:relative;z-index:1 }
+  .result.win .prizes b, .result.win .rtotal{ color:var(--tc) !important }
+  .result.win > *{ position:relative;z-index:1 }
+  .result .tierbadge{ display:inline-block;margin-top:6px;padding:4px 12px;border-radius:99px;font-size:12px;font-weight:800;letter-spacing:.5px;
+    color:#fff;background:var(--tc);box-shadow:0 3px 10px color-mix(in srgb,var(--tc) 40%,transparent) }
+  .emb{ width:96px;height:96px;display:block;margin:0 auto;filter:drop-shadow(0 6px 12px color-mix(in srgb,var(--tc) 35%,transparent)) }
+  .t-small .emb, .t-mid .emb{ width:80px;height:80px }
+  .emb .rays{ transform-origin:48px 52px;animation:spin 14s linear infinite }
+  .emb .bob{ animation:bob 2.4s ease-in-out infinite;transform-origin:center }
+  @keyframes spin{ to{ transform:rotate(360deg) } }
+  @keyframes bob{ 0%,100%{ transform:translateY(0) } 50%{ transform:translateY(-4px) } }
+  .result.t-jackpot{ background:linear-gradient(160deg,color-mix(in srgb,#ffd65a 45%,var(--card)),color-mix(in srgb,#ffe9a8 30%,var(--card)) 45%,var(--card)) !important;
+    box-shadow:0 0 0 5px color-mix(in srgb,var(--tc) 18%,transparent),0 14px 36px color-mix(in srgb,var(--tc) 30%,transparent) }
+  .result.t-jackpot::after{ content:'';position:absolute;inset:0;z-index:0;pointer-events:none;
+    background:linear-gradient(105deg,transparent 35%,rgba(255,255,255,.55) 50%,transparent 65%);transform:translateX(-100%);animation:shine 2.8s ease-in-out .4s infinite }
+  :root[data-theme="dark"] .result.t-jackpot::after{ background:linear-gradient(105deg,transparent 35%,rgba(255,240,190,.16) 50%,transparent 65%) }
+  @keyframes shine{ 60%,100%{ transform:translateX(100%) } }
+  .result.t-jackpot .rtotal{ font-size:26px }
+  .result.t-jackpot .rnum{ background:linear-gradient(180deg,#e9a800,#9a6200);-webkit-background-clip:text;background-clip:text;color:transparent }
+  :root[data-theme="dark"] .result.t-jackpot .rnum{ background:linear-gradient(180deg,#ffe28a,#e0a100);-webkit-background-clip:text;background-clip:text }
+  .result.win > .confetti{ position:absolute;inset:0;pointer-events:none;z-index:0 }
+  :root[data-theme="dark"] .result.t-jackpot{ background:linear-gradient(160deg,color-mix(in srgb,#ffc533 24%,var(--card)),var(--card) 75%) !important }
+  .confetti i{ position:absolute;top:-14px;width:8px;height:12px;border-radius:2px;opacity:.95;animation:fall linear forwards }
+  @keyframes fall{ to{ transform:translateY(560px) rotate(720deg);opacity:0 } }
+  .badge.tier{ color:#fff !important;background:var(--tc) !important }
+  .badge.t-jackpot{ --tc:#d99400 } .badge.t-big{ --tc:#7c4dff } .badge.t-mid{ --tc:#0f8a4f } .badge.t-small{ --tc:#0e9aa7 }
+  @media (prefers-reduced-motion:reduce){ .emb .rays,.emb .bob,.result.t-jackpot::after,.result.win > .confetti{ animation:none !important;display:none } }
+  /* ───── ฉลองเต็มจอ ───── */
+  .cel{ position:fixed;inset:0;z-index:1000;display:grid;place-items:center;overflow:hidden;cursor:pointer;
+    background:radial-gradient(circle at 50% 38%,var(--cg1) 0%,var(--cg2) 45%,#05060a 100%);animation:celIn .4s ease both }
+  .cel.out{ animation:celOut .35s ease both }
+  .cel::before{ content:'';position:absolute;inset:0;z-index:3;pointer-events:none;background:#fff;animation:flash .6s ease-out both }
+  @keyframes flash{ 0%{ opacity:.85 } 100%{ opacity:0 } }
+  .cel-emb .emb{ animation:flipin 1.1s cubic-bezier(.2,1.5,.35,1) both,float 3s 1.2s ease-in-out infinite !important }
+  @keyframes flipin{ 0%{ transform:perspective(600px) scale(.1) rotateY(-540deg);opacity:0 } 70%{ opacity:1 } 100%{ transform:perspective(600px) scale(1) rotateY(0) } }
+  @keyframes float{ 50%{ transform:translateY(-8px) scale(1.03) } }
+  .cel-num .dg{ display:inline-block;min-width:.62em }
+  .cel-num .dg.land{ animation:land .35s cubic-bezier(.2,1.8,.4,1) }
+  @keyframes land{ 0%{ transform:translateY(-30%) scale(1.25) } 100%{ transform:none } }
+  .cel-num.done{ animation:numglow 1.6s ease-in-out infinite }
+  @keyframes numglow{ 50%{ box-shadow:0 10px 30px rgba(0,0,0,.35),0 0 34px rgba(var(--gl),.9),inset 0 2px 0 rgba(255,255,255,.7) } }
+  .cel-amt.done{ animation:amtpop .5s cubic-bezier(.2,1.8,.4,1),amtbeat 1.4s .5s ease-in-out infinite }
+  @keyframes amtpop{ 0%{ transform:scale(1) } 40%{ transform:scale(1.22) } 100%{ transform:scale(1) } }
+  @keyframes amtbeat{ 50%{ transform:scale(1.05) } }
+  .cel-title{ animation:boom .8s .2s cubic-bezier(.2,1.6,.35,1) both,glint 2.4s 1.2s ease-in-out infinite,wiggle 2.6s 1.4s ease-in-out infinite }
+  @keyframes wiggle{ 0%,100%{ transform:rotate(0) } 10%{ transform:rotate(-3deg) scale(1.04) } 20%{ transform:rotate(3deg) scale(1.04) } 30%{ transform:rotate(0) } }
+  .cel.t-jackpot{ --cg1:#b0461a;--cg2:#4a0d0b;--gl:255,200,60 } .cel.t-big{ --cg1:#6a3fd0;--cg2:#1f0d4a;--gl:200,170,255 }
+  .cel.t-mid{ --cg1:#14965a;--cg2:#06331f;--gl:150,255,200 } .cel.t-small{ --cg1:#118a95;--cg2:#062f35;--gl:150,240,255 }
+  .cel.t-jackpot{ --tc:#f2c14e } .cel.t-big{ --tc:#a98bff } .cel.t-mid{ --tc:#3ccf93 } .cel.t-small{ --tc:#3cc8d4 }
+  .cel canvas{ position:absolute;inset:0;width:100%;height:100%;pointer-events:none }
+  .cel .beams{ position:absolute;left:50%;top:36%;width:180vmax;height:180vmax;transform:translate(-50%,-50%);pointer-events:none;
+    background:repeating-conic-gradient(from 0deg,rgba(var(--gl),.20) 0deg 7deg,transparent 7deg 18deg);
+    -webkit-mask:radial-gradient(circle,#000 0,rgba(0,0,0,.6) 18%,transparent 48%);mask:radial-gradient(circle,#000 0,rgba(0,0,0,.6) 18%,transparent 48%);
+    animation:beams 26s linear infinite }
+  .cel .halo{ position:absolute;left:50%;top:36%;width:340px;height:340px;transform:translate(-50%,-50%);border-radius:50%;pointer-events:none;
+    background:radial-gradient(circle,rgba(var(--gl),.55),rgba(var(--gl),0) 65%);animation:halo 2.2s ease-in-out infinite }
+  @keyframes beams{ to{ transform:translate(-50%,-50%) rotate(360deg) } }
+  @keyframes halo{ 50%{ transform:translate(-50%,-50%) scale(1.15);opacity:.75 } }
+  @keyframes celIn{ from{ opacity:0 } } @keyframes celOut{ to{ opacity:0;transform:scale(1.04) } }
+  .cel-box{ position:relative;text-align:center;color:#fff;width:min(440px,92vw);padding:10px 16px 18px;cursor:default;
+    background:radial-gradient(ellipse 60% 42% at 50% 56%,rgba(0,0,0,.34),rgba(0,0,0,0) 100%) }
+  .cel-emb .emb{ width:clamp(150px,42vw,200px) !important;height:clamp(150px,42vw,200px) !important;filter:drop-shadow(0 10px 30px rgba(var(--gl),.6)) !important;
+    animation:boom .9s cubic-bezier(.2,1.7,.35,1) both }
+  .cel-emb .emb .rays path{ fill:rgb(var(--gl)) }
+  .cel-kicker{ font-size:14px;font-weight:700;letter-spacing:3px;color:rgba(255,255,255,.75);margin-top:2px;animation:up .5s .35s both }
+  .cel-title{ font-size:clamp(44px,13vw,72px);line-height:1.15;font-weight:900;letter-spacing:.5px;margin:2px 0 4px;
+    background:linear-gradient(180deg,#fffbe6 0%,#ffe27a 38%,#f0a500 52%,#ffd34d 70%,#fff4c2 100%);background-size:100% 200%;
+    -webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 6px 22px rgba(var(--gl),.55));
+    animation:boom .8s .2s cubic-bezier(.2,1.6,.35,1) both,glint 2.4s 1.2s ease-in-out infinite }
+  .cel.t-big .cel-title{ background-image:linear-gradient(180deg,#fff 0%,#e6d9ff 40%,#b99bff 55%,#fff 100%) }
+  .cel.t-mid .cel-title{ background-image:linear-gradient(180deg,#fff 0%,#c8ffe2 40%,#5fe0a4 55%,#fff 100%) }
+  .cel.t-small .cel-title{ background-image:linear-gradient(180deg,#fff 0%,#c9f6ff 40%,#5fd3e0 55%,#fff 100%) }
+  @keyframes glint{ 50%{ background-position:0 100% } }
+  .cel-prize{ font-size:17px;font-weight:700;color:rgba(255,255,255,.92);animation:up .5s .5s both }
+  .cel-num{ position:relative;display:inline-block;margin:14px 0 6px;padding:12px 26px;border-radius:14px;font-size:clamp(30px,9vw,42px);font-weight:900;letter-spacing:6px;
+    color:#4a2c00;background:linear-gradient(180deg,#fff6cf,#ffd44f 55%,#e9a500);box-shadow:0 10px 30px rgba(0,0,0,.35),inset 0 2px 0 rgba(255,255,255,.7),inset 0 -3px 0 rgba(0,0,0,.12);
+    font-feature-settings:"tnum" 1;animation:up .5s .6s both }
+  .cel-num::before,.cel-num::after{ content:'';position:absolute;top:50%;width:16px;height:16px;margin-top:-8px;border-radius:50%;background:var(--cg2) }
+  .cel-num::before{ left:-8px } .cel-num::after{ right:-8px }
+  .cel-amt{ font-size:clamp(38px,11vw,58px);font-weight:900;line-height:1.1;margin-top:8px;color:#fff;font-feature-settings:"tnum" 1;
+    text-shadow:0 0 24px rgba(var(--gl),.8),0 4px 0 rgba(0,0,0,.25);animation:up .5s .75s both }
+  .cel-amt small{ font-size:.42em;font-weight:800;margin-left:6px;opacity:.9 }
+  .cel-more{ font-size:13px;color:rgba(255,255,255,.75);margin-top:4px }
+  .cel-btn{ margin-top:20px;padding:13px 30px !important;border-radius:99px !important;font-size:17px !important;font-weight:800;border:0 !important;cursor:pointer;
+    color:#4a2c00 !important;background:linear-gradient(180deg,#fff6cf,#ffcf3f) !important;box-shadow:0 8px 24px rgba(var(--gl),.45) !important;animation:up .5s 1s both }
+  .cel-hint{ font-size:12px;color:rgba(255,255,255,.55);margin-top:10px }
+  @keyframes boom{ 0%{ transform:scale(.2);opacity:0 } 100%{ transform:scale(1);opacity:1 } }
+  @keyframes up{ from{ transform:translateY(16px);opacity:0 } }
+  .cel.shake .cel-box{ animation:shake .5s .15s }
+  @keyframes shake{ 20%{ transform:translate(-6px,3px) } 40%{ transform:translate(6px,-3px) } 60%{ transform:translate(-4px,2px) } 80%{ transform:translate(3px,-1px) } }
+  @media (prefers-reduced-motion:reduce){ .cel *{ animation:none !important } .cel .beams{ display:none } }
+</style>
+</head>
+<body>
+
+<!-- ═════════ เข้าสู่ระบบ / สมัคร ═════════ -->
+<div class="wrap hidden" id="authView">
+  <div class="auth card">
+    <h1 class="brandline"><span class="logo-slot"></span><span class="brand">เลขเด็ด 88</span></h1>
+    <div class="sub">สุ่มเลข · สถิติย้อนหลัง · ตรวจเลขที่ซื้อ</div>
+    <div class="seg" id="authSeg">
+      <button class="on" data-a="login">เข้าสู่ระบบ</button>
+      <button data-a="register">สมัครสมาชิก</button>
+    </div>
+    <form id="loginForm">
+      <label>ชื่อผู้ใช้</label><input name="username" autocomplete="username" required>
+      <label>รหัสผ่าน</label><input name="password" type="password" autocomplete="current-password" required>
+      <button type="submit">เข้าสู่ระบบ</button>
+    </form>
+    <form id="regForm" class="hidden">
+      <label>ชื่อที่แสดง</label><input name="name" maxlength="40" placeholder="เช่น เบนซ์">
+      <label>ชื่อผู้ใช้ (a-z, 0-9, _ หรือ .)</label><input name="username" autocomplete="username" required>
+      <label>รหัสผ่าน (อย่างน้อย 6 ตัว)</label><input name="password" type="password" autocomplete="new-password" required minlength="6">
+      <label>ยืนยันรหัสผ่าน</label><input name="password2" type="password" autocomplete="new-password" required minlength="6">
+      <button type="submit">สมัครสมาชิก</button>
+      <div class="note">สมัครแล้วต้องรอผู้ดูแลอนุมัติก่อนจึงเข้าใช้งานได้</div>
+    </form>
+    <div class="msg" id="authMsg"></div>
+  </div>
+</div>
+
+<!-- ═════════ แอป ═════════ -->
+<div class="wrap hidden" id="appView">
+  <div class="topbar hero">
+    <div class="grow"><h1 class="brandline"><span class="logo-slot"></span><span class="brand">เลขเด็ด 88</span></h1><div class="who" id="who"></div></div>
+    <div class="hero-acts">
+      <button class="ghost mini icon-only" id="themeBtn" aria-label="สลับธีมสว่าง/มืด" title="สลับธีม"></button>
+      <button class="ghost mini" id="logoutBtn" data-ic="logout" aria-label="ออกจากระบบ" title="ออกจากระบบ"><span>ออกจากระบบ</span></button>
+    </div>
+  </div>
+
+  <div class="game" id="gameSwitch">
+    <button class="th on" data-g="th"><svg class="flag" viewBox="0 0 30 20" aria-hidden="true"><rect width="30" height="20" fill="#a51931"/><rect y="3.33" width="30" height="13.34" fill="#f4f5f8"/><rect y="6.67" width="30" height="6.66" fill="#2d2a4a"/></svg>หวยรัฐบาลไทย</button>
+    <button class="lao" data-g="lao"><svg class="flag" viewBox="0 0 30 20" aria-hidden="true"><rect width="30" height="20" fill="#ce1126"/><rect y="5" width="30" height="10" fill="#002868"/><circle cx="15" cy="10" r="4" fill="#fff"/></svg>หวยลาว</button>
+    <button class="n3" data-g="n3"><span class="n3tag">N3</span>สลาก N3</button>
+  </div>
+  <div class="sub" id="meta" style="margin-top:8px">กำลังโหลด…</div>
+
+  <div class="card" id="latestCard"><div class="loading">กำลังโหลด…</div></div>
+
+  <div class="tabs" id="tabs">
+    <button class="tab on" data-p="rand" data-ic="dice">สุ่มเลข</button>
+    <button class="tab" data-p="tips" data-ic="flame">เลขเด็ด</button>
+    <button class="tab" data-p="check" data-ic="trophy">ตรวจรางวัล</button>
+    <button class="tab" data-p="stats" data-ic="chart">สถิติ</button>
+    <button class="tab" data-p="tix" data-ic="ticket">เลขที่ซื้อ</button>
+    <button class="tab" data-p="money" data-ic="wallet">สรุปเงิน</button>
+    <button class="tab" data-p="find" data-ic="search">ค้นหา</button>
+    <button class="tab hidden" data-p="admin" id="adminTab" data-ic="shield">ผู้ดูแล</button>
+  </div>
+
+  <!-- สุ่มเลข -->
+  <section class="page on" id="p-rand">
+    <div class="card">
+      <h3>สุ่มจาก</h3>
+      <div class="chips" id="modes">
+        <button class="chip on" data-m="all">สุ่มล้วน</button>
+        <button class="chip" data-m="hot">เลขออกบ่อย</button>
+        <button class="chip" data-m="cold">เลขไม่ออกนาน</button>
+        <button class="chip" data-m="year">ฮอตช่วงนี้</button>
+        <button class="chip" data-m="bday">วันเกิด/เลขมงคล</button>
+      </div>
+      <input id="bday" class="hidden" style="margin-top:10px" inputmode="numeric" placeholder="เช่น วันเกิด 15081994 หรือทะเบียนรถ">
+      <div class="muted small" id="modeHint" style="margin-top:8px"></div>
+      <button class="go" id="goBtn" data-ic="dice">สุ่มเลขงวดนี้</button>
+    </div>
+    <div class="card hidden" id="pickCard">
+      <div class="muted small" id="pickFor"></div>
+      <div class="picks">
+        <div class="pick"><div class="k">เลขท้าย 2 ตัว</div><div class="v" id="p2a">--</div><div class="why" id="w2a"></div></div>
+        <div class="pick"><div class="k">เลขท้าย 2 ตัว (สำรอง)</div><div class="v" id="p2b">--</div><div class="why" id="w2b"></div></div>
+        <div class="pick"><div class="k">เลข 3 ตัว</div><div class="v" id="p3a">---</div><div class="why" id="w3a"></div></div>
+        <div class="pick"><div class="k">เลข 3 ตัว (สำรอง)</div><div class="v" id="p3b">---</div><div class="why" id="w3b"></div></div>
+        <div class="pick wide"><div class="k" id="pBigLbl">เลขสลาก 6 หลัก</div><div class="v" id="pBig">------</div><div class="why" id="wBig"></div></div>
+      </div>
+      <div class="row" style="margin-top:12px">
+        <button class="ghost" id="againBtn">สุ่มใหม่</button>
+        <button id="saveBtn">บันทึกว่าซื้อเลขนี้</button>
+      </div>
+      <div class="note" id="oddsNote"></div>
+    </div>
+  </section>
+
+  <!-- เลขเด็ดประจำงวด -->
+  <section class="page" id="p-tips">
+    <div id="tipsOut"><div class="loading">กำลังวิเคราะห์…</div></div>
+  </section>
+
+  <!-- ตรวจรางวัล -->
+  <section class="page" id="p-check">
+    <div class="card">
+      <h3 data-ic="trophy">ตรวจรางวัล</h3>
+      <div class="muted small" id="checkHint"></div>
+      <label class="flbl">เลือกงวด</label>
+      <select id="cDate" class="sel"></select>
+      <label class="flbl">เลขที่จะตรวจ</label>
+      <div class="row" style="margin-top:2px">
+        <input class="tnum" id="cNum" inputmode="numeric" maxlength="6">
+        <button id="cBtn" style="flex:0 0 auto">ตรวจ</button>
+      </div>
+      <div id="cOut"></div>
+    </div>
+  </section>
+
+  <!-- สถิติ -->
+  <section class="page" id="p-stats">
+    <div class="card">
+      <h3>เลขท้าย 2 ตัว 00–99</h3>
+      <div class="muted small" id="statRange"></div>
+      <div class="seg" id="metric" style="margin-top:10px">
+        <button class="on" data-k="count">ออกกี่ครั้ง</button>
+        <button data-k="gap">ไม่ออกมากี่งวด</button>
+        <button data-k="recent" id="recentBtn">ช่วงหลัง</button>
+      </div>
+      <div class="heat" id="heat" aria-label="ตารางความถี่เลขท้าย 2 ตัว"></div>
+      <div class="legend" id="legend"></div>
+      <div class="detail" id="cellDetail">แตะช่องตัวเลขเพื่อดูรายละเอียด</div>
+    </div>
+    <div class="card cols">
+      <div><h3>🔥 ออกบ่อยสุด</h3><ul class="list" id="hotList"></ul></div>
+      <div><h3>🧊 ไม่ออกนานสุด</h3><ul class="list" id="coldList"></ul></div>
+    </div>
+    <div class="card"><h3>❌ ไม่เคยออกเลย</h3><div id="never" style="font-size:18px;font-weight:700;letter-spacing:2px"></div></div>
+    <div class="card"><h3>เลขท้าย 3 ตัว ที่ออกซ้ำบ่อย</h3><ul class="list" id="top3"></ul></div>
+    <div class="card hidden" id="n3PayCard"><h3>เงินรางวัลสลาก N3 ย้อนหลัง</h3>
+      <div class="muted small">เงินรางวัลผันแปรตามยอดขายแต่ละงวด (ต่อสลาก 1 ใบ ราคา 20 บาท)</div>
+      <div class="paywrap"><table class="paytbl" id="n3Pay"></table></div></div>
+  </section>
+
+  <!-- เลขที่ซื้อ -->
+  <section class="page" id="p-tix">
+    <div class="card">
+      <h3>บันทึกเลขที่ซื้อ</h3>
+      <div class="muted small" id="tixHint"></div>
+      <div class="row" style="margin-top:10px">
+        <input type="date" id="tDate">
+        <input class="tnum" id="tNum" inputmode="numeric" maxlength="6">
+        <input class="tqty" id="tQty" type="number" min="1" max="999" value="1" inputmode="numeric" aria-label="จำนวนใบ" title="จำนวนใบ">
+        <button id="tAdd" style="flex:0 0 auto">บันทึก</button>
+      </div>
+      <div class="msg" id="tMsg"></div>
+      <div class="sum" id="tSum"></div>
+    </div>
+    <div class="card" id="followCard">
+      <h3 data-ic="flame">ควรตามเลขงวดล่าสุดไหม</h3>
+      <div id="followOut" class="muted small">บันทึกเลขที่ซื้อ แล้วรอผลออก ระบบจะวิเคราะห์ให้ว่าควรซื้อเลขเดิมต่อไหม</div>
+    </div>
+    <div class="card" id="tList"></div>
+  </section>
+
+  <!-- สรุปเงิน -->
+  <section class="page" id="p-money">
+    <div class="card">
+      <h3 data-ic="wallet">เดือนนี้</h3>
+      <div class="muted small">รวมทุกหวย · นับจากเลขที่บันทึก × ราคาต่อใบ · เงินรางวัลจากผลตรวจจริง</div>
+      <div id="mMonth"><div class="loading">กำลังโหลด…</div></div>
+    </div>
+    <div class="card">
+      <h3>ซื้อ vs ได้คืน 12 เดือน</h3>
+      <div class="lgd"><span><i style="background:#8a94a6"></i>ซื้อ</span><span><i style="background:var(--win)"></i>ได้คืน</span></div>
+      <div id="mChart"></div>
+      <div class="detail" id="mDetail">แตะแท่งเพื่อดูรายละเอียดเดือนนั้น</div>
+    </div>
+    <div class="card"><h3>แยกตามหวย</h3><div class="paywrap"><table class="mtbl" id="mGames"></table></div>
+      <div class="muted small" id="mLaoNote" style="margin-top:8px"></div></div>
+    <div class="card"><h3>รายปี</h3><div class="paywrap"><table class="mtbl" id="mYears"></table></div></div>
+    <div class="card">
+      <h3 data-ic="key">ตั้งงบ</h3>
+      <form class="grid2" id="mForm">
+        <label>งบต่อเดือน (บาท)<input name="budget" inputmode="numeric" placeholder="เช่น 1000"></label>
+        <label>ราคาหวยลาวต่อใบ<input name="laoPrice" inputmode="numeric" placeholder="ไม่คิด = เว้นว่าง"></label>
+        <button class="full" type="submit">บันทึก</button>
+      </form>
+      <div class="muted small">หวยไทย 80 บาท/ใบ · N3 20 บาท/ใบ · ใช้งบเกิน 80% จะเตือนตอนบันทึกเลข และในข้อความ LINE</div>
+      <div class="msg" id="mMsg"></div>
+    </div>
+  </section>
+
+  <!-- ค้นหา -->
+  <section class="page" id="p-find">
+    <div class="card">
+      <div class="search">
+        <input id="q" inputmode="numeric" maxlength="6" autocomplete="off">
+        <button id="qBtn" style="flex:0 0 auto">ค้นหา</button>
+      </div>
+      <div id="qOut"></div>
+    </div>
+  </section>
+
+  <!-- ผู้ดูแล -->
+  <section class="page" id="p-admin">
+    <div class="card">
+      <h3>รออนุมัติ</h3>
+      <div id="pendingList" class="muted small">กำลังโหลด…</div>
+    </div>
+    <div class="card">
+      <h3>สมาชิกทั้งหมด</h3>
+      <div id="memberList"></div>
+      <div class="msg" id="memMsg"></div>
+    </div>
+    <div class="card">
+      <h3 data-ic="bell">ตั้งค่า LINE แจ้งผล</h3>
+      <div class="muted small" id="lineCfgStatus">กำลังโหลด…</div>
+      <form class="grid2" id="lineCfgForm" autocomplete="off">
+        <label class="full">Channel access token (long-lived)<input type="password" name="channelToken" placeholder="เว้นว่าง = ใช้ค่าเดิม"></label>
+        <label class="full">ลิงก์เพิ่มเพื่อนบอท<input name="botUrl" placeholder="https://lin.ee/xxxx หรือ https://line.me/R/ti/p/@xxxx"></label>
+        <button class="full" type="submit">บันทึกการตั้งค่า LINE</button>
+      </form>
+      <div class="webhook hidden" id="webhookBox">
+        <div class="small muted">Webhook URL (วางใน LINE Developers → Messaging API → Webhook settings แล้วเปิด Use webhook)</div>
+        <div class="row" style="margin-top:6px"><input id="webhookUrl" readonly><button class="ghost mini" id="copyHook" style="flex:0 0 auto">คัดลอก</button></div>
+      </div>
+      <div class="msg" id="lineCfgMsg"></div>
+    </div>
+    <div class="card">
+      <h3>อัปเดตผลหวย</h3>
+      <div class="muted small">อัตโนมัติ: หวยไทย วันหวยออกเริ่ม 16:00 น. แล้วดึงซ้ำทุก 15 นาทีจนครบทุกรางวัล (ถึง 20:00 น.) · สลาก N3 เลขพร้อมหวยไทย เงินรางวัลดึงซ้ำทุก 30 นาทีถึง 21:00 น. · หวยลาว ทุกวัน 21:00 น.</div>
+      <button class="ghost" id="refreshBtn" style="margin-top:10px">ดึงผลล่าสุดตอนนี้</button>
+      <div class="msg" id="refreshMsg"></div>
+      <details style="margin-top:12px">
+        <summary class="small" style="cursor:pointer;font-weight:600">กรอกผลหวยไทยเอง</summary>
+        <form class="grid2" id="thForm">
+          <label class="full">งวดวันที่<input type="date" name="date" required></label>
+          <label class="full">รางวัลที่ 1<input name="first" inputmode="numeric" maxlength="6" required></label>
+          <label>เลขหน้า 3 ตัว (1)<input name="front3a" inputmode="numeric" maxlength="3" required></label>
+          <label>เลขหน้า 3 ตัว (2)<input name="front3b" inputmode="numeric" maxlength="3" required></label>
+          <label>เลขท้าย 3 ตัว (1)<input name="back3a" inputmode="numeric" maxlength="3" required></label>
+          <label>เลขท้าย 3 ตัว (2)<input name="back3b" inputmode="numeric" maxlength="3" required></label>
+          <label class="full">เลขท้าย 2 ตัว<input name="back2" inputmode="numeric" maxlength="2" required></label>
+          <button class="full" type="submit">บันทึกผลหวยไทย</button>
+        </form>
+      </details>
+      <details style="margin-top:10px">
+        <summary class="small" style="cursor:pointer;font-weight:600">กรอกผลหวยลาวเอง</summary>
+        <form class="grid2" id="laoForm">
+          <label class="full">งวดวันที่<input type="date" name="date" required></label>
+          <label class="full">เลข 4 หรือ 6 ตัว<input name="lao" inputmode="numeric" maxlength="6" required></label>
+          <button class="full" type="submit">บันทึกผลหวยลาว</button>
+        </form>
+      </details>
+      <details style="margin-top:10px">
+        <summary class="small" style="cursor:pointer;font-weight:600">กรอกเงินรางวัลสลาก N3 เอง</summary>
+        <div class="muted small" style="margin-top:6px">เลข 3 ตัวตรง/2 ตัวตรง ระบบดึงจากรางวัลที่ 1 ของงวดนั้นให้เอง กรอกแค่เงินรางวัล</div>
+        <form class="grid2" id="n3Form">
+          <label class="full">งวดวันที่<input type="date" name="date" required></label>
+          <label>เงิน 3 ตัวตรง<input name="p3" inputmode="numeric" required></label>
+          <label>เงิน 3 ตัวสลับหลัก<input name="psw" inputmode="numeric"></label>
+          <label>เงิน 2 ตัวตรง<input name="p2" inputmode="numeric"></label>
+          <label>เงินรางวัลพิเศษ<input name="psp" inputmode="numeric"></label>
+          <label class="full">เลขรางวัลพิเศษ 12 หลัก<input name="sp" inputmode="numeric" maxlength="12"></label>
+          <button class="full" type="submit">บันทึกสลาก N3</button>
+        </form>
+      </details>
+      <div class="msg" id="drawMsg"></div>
+    </div>
+  </section>
+
+  <div class="card notify-card">
+    <h3 data-ic="bell">แจ้งผลหวยทาง LINE</h3>
+    <div class="muted small">เมื่อผลออก ระบบจะส่งผลตรวจเลขที่คุณบันทึกไว้ไปที่ LINE ให้อัตโนมัติ</div>
+    <div id="lineBox" style="margin-top:10px"><div class="muted small">กำลังโหลด…</div></div>
+    <div class="msg" id="lineMsg"></div>
+    <details style="margin-top:10px">
+      <summary class="small" style="cursor:pointer;font-weight:600">พิมพ์คำสั่งในแชท LINE ได้ (หลังเชื่อมแล้ว)</summary>
+      <ul class="cmds">
+        <li><code>357846 x2</code> บันทึกหวยไทย 2 ใบ (งวดถัดไป)</li>
+        <li><code>N3 422 x5</code> · <code>ลาว 1234 x3</code> · หลายเลขพิมพ์คนละบรรทัด</li>
+        <li><code>ลบ 357846</code> ลบเลขที่ยังรอผล</li>
+        <li><code>เลขของฉัน</code> · <code>เลขเด็ด</code> · <code>ผล</code> · <code>ควรตาม</code></li>
+        <li><code>งบ</code> สรุปเงินเดือนนี้ · <code>งบ 1000</code> ตั้งงบ</li>
+        <li><code>เตือน ปิด</code> / <code>เตือน เปิด</code> · <code>วิธีใช้</code></li>
+      </ul>
+    </details>
+  </div>
+
+  <details class="card">
+    <summary style="cursor:pointer;font-weight:600" data-ic="key">เปลี่ยนรหัสผ่าน</summary>
+    <form class="grid2" id="pwForm">
+      <label class="full">รหัสผ่านเดิม<input type="password" name="old" required autocomplete="current-password"></label>
+      <label class="full">รหัสผ่านใหม่<input type="password" name="new1" required minlength="6" autocomplete="new-password"></label>
+      <button class="full" type="submit">เปลี่ยนรหัสผ่าน</button>
+    </form>
+    <div class="msg" id="pwMsg"></div>
+  </details>
+</div>
+<div class="tip" id="tip"></div>
+
+<script>
+  const $ = id => document.getElementById(id);
+  const TH_M = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  const DOW = ['อา.','จ.','อ.','พ.','พฤ.','ศ.','ส.'];
+  const thDate = (s, withDow) => { if (!s) return '–'; const [y,m,d] = String(s).split('-').map(Number); const t = new Date(y, m-1, d);
+    return (withDow ? DOW[t.getDay()] + ' ' : '') + d + ' ' + TH_M[m-1] + ' ' + (y+543); };
+  const pad = (n, l) => String(n).padStart(l, '0');
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const money = n => n.toLocaleString('th-TH');
+  const store = {
+    get(k){ try { return localStorage.getItem(k); } catch(e){ return null; } },
+    set(k,v){ try { localStorage.setItem(k,v); } catch(e){} },
+    del(k){ try { localStorage.removeItem(k); } catch(e){} },
+  };
+
+  let token = store.get('lotto_token');
+  let user = null;
+  let game = ['lao', 'n3'].indexOf(store.get('lotto_game')) >= 0 ? store.get('lotto_game') : 'th';
+  const cache = {};       // dashboard ต่อหวย
+  let D = null;
+  let mode = 'all', metric = 'count', lastPick = null;
+
+  const GAME = {
+    th: { name: 'หวยรัฐบาลไทย', search: [2,3,6], ticket: [6], big: 'เลขสลาก 6 หลัก', bigLen: 6,
+          odds: 'ทุกเลขมีโอกาสออกเท่ากันทุกงวด (เลขท้าย 2 ตัว 1%, 3 ตัว 0.2%) สถิติช่วยให้เลือกง่ายขึ้น แต่ไม่ได้เพิ่มโอกาสถูก ซื้อพองบที่เสียได้นะ 🍀',
+          tixHint: 'ใส่เลขสลาก 6 หลัก ระบบตรวจทุกรางวัลให้เองหลังผลออก (อัปเดตหลังผลออกราว 16:00 น.)', recent: 'ปีล่าสุด (24 งวด)' },
+    lao: { name: 'หวยลาว', search: [2,3,4,6], ticket: [2,3,4,6], big: 'เลข 4 ตัว', bigLen: 4,
+          odds: 'ทุกเลขมีโอกาสออกเท่ากันทุกงวด (2 ตัว 1%, 3 ตัว 0.1%, 4 ตัว 0.01%) สถิติไม่ได้เพิ่มโอกาสถูก · หวยลาวถูกกฎหมายในลาว แต่การซื้อผ่านเจ้ามือในไทยผิดกฎหมาย',
+          tixHint: 'ใส่เลข 2, 3, 4 หรือ 6 หลัก ระบบตรวจให้เองหลังผลออก (อัปเดต 21:00 น.)', recent: '60 งวดล่าสุด' },
+    n3: { name: 'สลาก N3', search: [2,3], ticket: [3,12], big: 'เลข N3 (3 ตัว)', bigLen: 3,
+          odds: 'สลาก N3 ใช้เลขชุดเดียวกับรางวัลที่ 1 (3 ตัวตรง 0.1%, สลับหลัก ≤0.5%, 2 ตัวตรง 1%) เงินรางวัลผันแปรตามยอดขาย สถิติไม่ได้เพิ่มโอกาสถูก 🍀',
+          tixHint: 'ใส่เลข 3 หลัก (หรือเลขสลาก 12 หลักเพื่อตรวจรางวัลพิเศษด้วย) ระบบตรวจ 3 ตัวตรง/สลับหลัก/2 ตัวตรงให้เองหลังผลออก', recent: 'ปีล่าสุด (24 งวด)' },
+  };
+  const PH = { th: '6 หลัก', lao: '2–6 หลัก', n3: '3 หรือ 12 หลัก' };
+  const BADLEN = { th: 'ใส่เลขสลาก 6 หลัก', lao: 'ใส่เลข 2, 3, 4 หรือ 6 หลัก', n3: 'สลาก N3 ใส่เลข 3 หลัก (หรือ 12 หลัก)' };
+
+  /* ---------- server call ---------- */
+  function call(fn, ...args) {
+    return new Promise((ok, bad) => {
+      const runner = google.script.run
+        .withSuccessHandler(ok)
+        .withFailureHandler(e => {
+          const msg = (e && e.message) || String(e);
+          if (msg.indexOf('AUTH:') >= 0) { signOut(msg.replace(/^.*AUTH:\s*/, '')); }
+          bad(new Error(msg.replace(/^.*AUTH:\s*/, '')));
+        });
+      if (typeof runner[fn] !== 'function') {
+        bad(new Error('เว็บยังใช้ Code.gs เวอร์ชันเก่า (ไม่มีฟังก์ชัน ' + fn + ') — วาง Code.gs ใหม่ กด Save แล้ว Deploy > Manage deployments > New version'));
+        return;
+      }
+      runner[fn](...args);
+    });
+  }
+
+  /* ---------- auth ---------- */
+  function showAuth(msg) {
+    $('appView').classList.add('hidden'); $('authView').classList.remove('hidden');
+    if (msg) { $('authMsg').className = 'msg err'; $('authMsg').textContent = msg; }
+  }
+  function signOut(msg) {
+    if (token) call('logout', token).catch(() => {});
+    token = null; user = null; store.del('lotto_token');
+    Object.keys(cache).forEach(k => delete cache[k]);
+    showAuth(msg);
+  }
+  document.querySelectorAll('#authSeg button').forEach(b => b.onclick = () => {
+    document.querySelectorAll('#authSeg button').forEach(x => x.classList.toggle('on', x === b));
+    $('loginForm').classList.toggle('hidden', b.dataset.a !== 'login');
+    $('regForm').classList.toggle('hidden', b.dataset.a !== 'register');
+    $('authMsg').textContent = '';
+  });
+  $('loginForm').onsubmit = e => {
+    e.preventDefault();
+    const f = Object.fromEntries(new FormData(e.target).entries());
+    const btn = e.target.querySelector('button'); btn.disabled = true;
+    $('authMsg').className = 'msg'; $('authMsg').textContent = 'กำลังเข้าสู่ระบบ…';
+    call('login', f).then(r => {
+      token = r.token; user = r.user; store.set('lotto_token', token);
+      $('authMsg').textContent = ''; e.target.reset(); startApp();
+    }).catch(err => { $('authMsg').className = 'msg err'; $('authMsg').textContent = err.message; })
+      .finally(() => { btn.disabled = false; });
+  };
+  $('regForm').onsubmit = e => {
+    e.preventDefault();
+    const f = Object.fromEntries(new FormData(e.target).entries());
+    if (f.password !== f.password2) { $('authMsg').className = 'msg err'; $('authMsg').textContent = 'รหัสผ่านทั้งสองช่องไม่ตรงกัน'; return; }
+    const btn = e.target.querySelector('button'); btn.disabled = true;
+    $('authMsg').className = 'msg'; $('authMsg').textContent = 'กำลังสมัคร…';
+    call('register', f).then(r => {
+      $('authMsg').className = 'msg ok'; $('authMsg').textContent = r.message; e.target.reset();
+      document.querySelector('#authSeg button[data-a=login]').click();
+      $('authMsg').className = 'msg ok'; $('authMsg').textContent = r.message;
+    }).catch(err => { $('authMsg').className = 'msg err'; $('authMsg').textContent = err.message; })
+      .finally(() => { btn.disabled = false; });
+  };
+  $('logoutBtn').onclick = () => signOut();
+
+  function startApp() {
+    $('authView').classList.add('hidden'); $('appView').classList.remove('hidden');
+    setGame(game);
+    loadNotify();
+  }
+
+  /* ---------- game / tabs ---------- */
+  function setGame(g) {
+    game = g; store.set('lotto_game', g);
+    document.body.classList.toggle('lao', g === 'lao');
+    document.body.classList.toggle('n3', g === 'n3');
+    document.querySelectorAll('#gameSwitch button').forEach(b => b.classList.toggle('on', b.dataset.g === g));
+    const G = GAME[g];
+    $('pBigLbl').textContent = G.big;
+    $('oddsNote').textContent = G.odds;
+    $('tixHint').textContent = G.tixHint;
+    $('recentBtn').textContent = G.recent;
+    $('tNum').maxLength = g === 'n3' ? 12 : 6; $('tNum').placeholder = PH[g];
+    $('cNum').maxLength = g === 'n3' ? 12 : 6; $('cNum').placeholder = PH[g];
+    $('checkHint').textContent = g === 'th' ? 'กรอกเลขสลาก 6 หลัก เลือกงวด แล้วกดตรวจ (ตรวจครบทุกรางวัล)'
+      : g === 'n3' ? 'กรอกเลข 3 หลัก (หรือเลขสลาก 12 หลัก) เลือกงวด แล้วกดตรวจ — ตรวจ 3 ตัวตรง สลับหลัก 2 ตัวตรง และรางวัลพิเศษ'
+      : 'กรอกเลข 2, 3, 4 หรือ 6 หลัก เลือกงวด แล้วกดตรวจ';
+    $('q').placeholder = G.search.join(', ').replace(/, (\d)$/, ' หรือ $1') + ' หลัก';
+    $('qOut').innerHTML = ''; $('cOut').innerHTML = ''; $('pickCard').classList.add('hidden'); $('tMsg').textContent = '';
+    if (cache[g]) { D = cache[g]; renderAll(); }
+    else {
+      $('meta').textContent = 'กำลังโหลดข้อมูล…';
+      $('latestCard').innerHTML = '<div class="loading">กำลังโหลด…</div>';
+      call('getDashboard', token, g).then(d => { cache[g] = d; if (game === g) { D = d; renderAll(); } })
+        .catch(e => { $('meta').innerHTML = '<span class="err">' + esc(e.message) + '</span>'; });
+    }
+  }
+  document.querySelectorAll('#gameSwitch button').forEach(b => b.onclick = () => {
+    setGame(b.dataset.g);
+    if ($('p-tips').classList.contains('on')) loadTips();
+    if ($('p-tix').classList.contains('on')) loadFollow();
+  });
+  document.querySelectorAll('.tab').forEach(b => b.onclick = () => {
+    document.querySelectorAll('.tab').forEach(x => x.classList.toggle('on', x === b));
+    document.querySelectorAll('.page').forEach(p => p.classList.toggle('on', p.id === 'p-' + b.dataset.p));
+    if (b.dataset.p === 'admin') { loadMembers(); loadLineCfg(); }
+    if (b.dataset.p === 'tips') loadTips();
+    if (b.dataset.p === 'tix') loadFollow();
+    if (b.dataset.p === 'money') loadMoney();
+  });
+
+  /* ---------- งวดถัดไป ---------- */
+  function bkkNow() { return new Date(Date.now() + (new Date().getTimezoneOffset() + 420) * 60000); }
+  const ymd = t => t.getFullYear() + '-' + pad(t.getMonth()+1, 2) + '-' + pad(t.getDate(), 2);
+  function nextDraw(g) {
+    const n = bkkNow();
+    if (g === 'lao') {
+      const t = new Date(n.getFullYear(), n.getMonth(), n.getDate());
+      const past = n.getHours() * 60 + n.getMinutes() >= 20 * 60 + 30;
+      if (past) t.setDate(t.getDate() + 1);
+      while (t.getDay() === 0 || t.getDay() === 6) t.setDate(t.getDate() + 1);
+      return ymd(t);
+    }
+    const y = n.getFullYear(), m = n.getMonth(), d = n.getDate(), after4 = n.getHours() >= 16;
+    if (d === 1 && !after4) return ymd(new Date(y, m, 1));
+    if (d < 16 || (d === 16 && !after4)) return ymd(new Date(y, m, 16));
+    return ymd(new Date(y, m + 1, 1));
+  }
+
+  /* ---------- render ---------- */
+  function renderAll() {
+    user = D.user;
+    $('who').textContent = 'สวัสดี ' + (user.name || user.username) + (user.role === 'admin' ? ' · ผู้ดูแล' : '');
+    $('adminTab').classList.toggle('hidden', user.role !== 'admin');
+    $('meta').textContent = !D.total || (game === 'n3' && !(D.dates || []).length) ? 'ยังไม่มีข้อมูล' : game === 'n3'
+      ? 'สลาก N3 · ' + D.dates.length + ' งวด ตั้งแต่ ' + thDate(D.dates[D.dates.length - 1]) + ' · สถิติเลขจากรางวัลที่ 1 ' + D.total + ' งวด'
+      : GAME[game].name + ' · ' + D.total + ' งวด · ' + thDate(D.from) + ' – ' + thDate(D.to);
+    renderN3Pay();
+    renderLatest(); renderModeHint(); renderStats(); renderTickets(D.tickets); populateCheckDates();
+    celebrateNewWins(D.tickets);
+    $('tDate').value = nextDraw(game);
+  }
+
+  function latestGrid(g, d) {
+    if (g === 'n3') {
+      const amt = v => v ? '<div class="amt">' + money(v) + ' ฿</div>' : '';
+      return '<div class="latest n3g">' +
+        '<div class="first"><div class="lbl">3 ตัวตรง</div><div class="num">' + d.s3 + '</div>' + amt(d.p3) + '</div>' +
+        '<div><div class="lbl">สลับหลัก</div><div class="num sw">' + (d.sw.join(' ') || '–') + '</div>' + amt(d.psw) + '</div>' +
+        '<div><div class="lbl">2 ตัวตรง</div><div class="num">' + d.s2 + '</div>' + amt(d.p2) + '</div>' +
+        '<div><div class="lbl">รางวัลพิเศษ</div><div class="num sw">' + (d.sp ? d.sp.slice(0, 3) + '…' + d.sp.slice(-4) : '–') + '</div>' + amt(d.psp) + '</div></div>' +
+        (d.p3 ? '' : '<div class="muted small" style="text-align:center;margin-top:8px">รอประกาศเงินรางวัล N3 (ระบบเติมให้อัตโนมัติ)</div>');
+    }
+    if (g === 'lao') return '<div class="latest">' +
+      '<div class="first"><div class="lbl">' + (d.six ? 'เลข 6 ตัว' : 'เลข 4 ตัว') + '</div><div class="num">' + (d.six || d.four) + '</div></div>' +
+      '<div><div class="lbl">4 ตัว</div><div class="num">' + d.four + '</div></div>' +
+      '<div><div class="lbl">3 ตัว</div><div class="num">' + d.four.slice(1) + '</div></div>' +
+      '<div><div class="lbl">2 ตัว</div><div class="num">' + d.four.slice(2) + '</div></div></div>';
+    return '<div class="latest">' +
+      '<div class="first"><div class="lbl">รางวัลที่ 1</div><div class="num">' + d.first + '</div></div>' +
+      '<div><div class="lbl">หน้า 3 ตัว</div><div class="num">' + (d.front3.join(' ') || '–') + '</div></div>' +
+      '<div><div class="lbl">ท้าย 3 ตัว</div><div class="num">' + (d.back3.join(' ') || '–') + '</div></div>' +
+      '<div><div class="lbl">ท้าย 2 ตัว</div><div class="num">' + d.back2 + '</div></div></div>';
+  }
+  function renderLatest() {
+    const d = D.latest[0];
+    if (!d) { $('latestCard').innerHTML = '<div class="muted">ยังไม่มีผล</div>'; return; }
+    const head = game === 'lao' ? 'ผลหวยลาวล่าสุด งวด ' + thDate(d.date, true) : game === 'n3' ? 'ผลสลาก N3 ล่าสุด งวด ' + thDate(d.date) : 'ผลล่าสุด งวด ' + thDate(d.date);
+    $('latestCard').innerHTML = '<div class="muted small" style="text-align:center;margin-bottom:8px">' + head + '</div>' + latestGrid(game, d);
+  }
+
+  /* ---------- ตรวจรางวัล ---------- */
+  function populateCheckDates() {
+    const sel = $('cDate'); if (!sel) return;
+    const prev = sel.value;
+    sel.innerHTML = (D.dates || []).map(dt => '<option value="' + dt + '">งวด ' + thDate(dt, game === 'lao') + '</option>').join('');
+    if (prev && (D.dates || []).indexOf(prev) >= 0) sel.value = prev;
+  }
+  /* ระดับรางวัล → กราฟิกฉลอง */
+  const TIER_RANK = { small: 1, mid: 2, big: 3, jackpot: 4 };
+  function tierOf(g, wins) {
+    let best = 'small';
+    (wins || []).forEach(w => {
+      const n = w.name || '';
+      let t = 'small';
+      if (/รางวัลที่ 1$|รางวัลพิเศษ|ตรง 6 ตัว/.test(n)) t = 'jackpot';
+      else if (/ข้างเคียง|รางวัลที่ 2|รางวัลที่ 3|ตรง 4 ตัว/.test(n)) t = 'big';
+      else if (/รางวัลที่ 4|รางวัลที่ 5|3 ตัวตรง|ตรง 3 ตัว/.test(n)) t = 'mid';
+      if (TIER_RANK[t] > TIER_RANK[best]) best = t;
+    });
+    return best;
+  }
+  const TIER = {
+    jackpot: { badge: 'แจ็กพอต', head: 'ถูกรางวัลใหญ่ที่สุด!', confetti: 90 },
+    big: { badge: 'รางวัลใหญ่', head: 'ยินดีด้วย ถูกรางวัลใหญ่!', confetti: 50 },
+    mid: { badge: 'ถูกรางวัล', head: 'ยินดีด้วย ถูกรางวัล!', confetti: 26 },
+    small: { badge: 'ได้คืน', head: 'ถูกรางวัล ได้เงินคืน!', confetti: 0 },
+  };
+  function emblem(t) {
+    const gold = '<linearGradient id="eg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff3b0"/><stop offset=".45" stop-color="#f5c542"/><stop offset="1" stop-color="#c98a00"/></linearGradient>';
+    const rays = n => '<g class="rays" opacity=".55">' + Array.from({length: n}, (_, i) => '<path d="M48 52 L45 4 L51 4 Z" fill="var(--tc)" opacity=".35" transform="rotate(' + (i * 360 / n) + ' 48 52)"/>').join('') + '</g>';
+    const sp = (x, y, s) => '<path d="M' + x + ' ' + (y - s) + ' L' + (x + s * .3) + ' ' + (y - s * .3) + ' L' + (x + s) + ' ' + y + ' L' + (x + s * .3) + ' ' + (y + s * .3) + ' L' + x + ' ' + (y + s) + ' L' + (x - s * .3) + ' ' + (y + s * .3) + ' L' + (x - s) + ' ' + y + ' L' + (x - s * .3) + ' ' + (y - s * .3) + 'Z" fill="#fff6c2"/>';
+    let body = '';
+    if (t === 'jackpot') body = rays(16) + '<g class="bob">' +
+      '<circle cx="48" cy="58" r="25" fill="url(#eg)" stroke="#a86f00" stroke-width="3"/><circle cx="48" cy="58" r="18" fill="none" stroke="#fff" stroke-opacity=".6" stroke-width="2"/>' +
+      '<text x="48" y="66" text-anchor="middle" font-family="system-ui,Arial" font-weight="900" font-size="22" fill="#8a5a00">฿</text>' +
+      '<path d="M27 33 L31 14 L40 24 L48 9 L56 24 L65 14 L69 33 Z" fill="url(#eg)" stroke="#a86f00" stroke-width="2.5" stroke-linejoin="round"/>' +
+      '<circle cx="31" cy="14" r="3" fill="#e74c3c"/><circle cx="48" cy="9" r="3.4" fill="#e74c3c"/><circle cx="65" cy="14" r="3" fill="#e74c3c"/></g>' + sp(18, 30, 6) + sp(80, 44, 5) + sp(76, 82, 4);
+    else if (t === 'big') body = rays(12) + '<g class="bob">' +
+      '<path d="M34 6 L46 34 L38 38 L26 10 Z" fill="#e0457b"/><path d="M62 6 L50 34 L58 38 L70 10 Z" fill="#7c4dff"/>' +
+      '<circle cx="48" cy="58" r="24" fill="url(#eg)" stroke="#a86f00" stroke-width="3"/>' +
+      '<path d="M48 44 l4.2 8.6 9.4 1.4-6.8 6.6 1.6 9.4-8.4-4.4-8.4 4.4 1.6-9.4-6.8-6.6 9.4-1.4z" fill="#fff8d6" stroke="#a86f00" stroke-width="1.6" stroke-linejoin="round"/></g>' + sp(16, 40, 5) + sp(82, 70, 5);
+    else if (t === 'mid') body = '<g class="bob">' +
+      '<path d="M30 16h36v16a18 18 0 0 1-36 0z" fill="url(#eg)" stroke="#a86f00" stroke-width="2.5"/>' +
+      '<path d="M30 21H21a1.5 1.5 0 0 0-1.5 1.5c0 8 5 13.5 12 14M66 21h9a1.5 1.5 0 0 1 1.5 1.5c0 8-5 13.5-12 14" fill="none" stroke="#a86f00" stroke-width="3" stroke-linecap="round"/>' +
+      '<path d="M44 49h8v12h-8z" fill="#c98a00"/><path d="M33 72h30l-3-10H36z" fill="var(--tc)"/><rect x="30" y="72" width="36" height="7" rx="2" fill="var(--tc)"/>' +
+      '<path d="M48 22 l2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.2-4.1 5.8-.8z" fill="#fff8d6"/></g>' + sp(18, 20, 5) + sp(80, 56, 4);
+    else body = '<g class="bob">' +
+      '<ellipse cx="48" cy="72" rx="20" ry="6" fill="#c98a00"/><rect x="28" y="62" width="40" height="10" fill="#e0a800"/><ellipse cx="48" cy="62" rx="20" ry="6" fill="url(#eg)" stroke="#a86f00" stroke-width="1.5"/>' +
+      '<ellipse cx="48" cy="54" rx="20" ry="6" fill="#c98a00"/><rect x="28" y="44" width="40" height="10" fill="#e0a800"/><ellipse cx="48" cy="44" rx="20" ry="6" fill="url(#eg)" stroke="#a86f00" stroke-width="1.5"/>' +
+      '<circle cx="48" cy="24" r="13" fill="url(#eg)" stroke="#a86f00" stroke-width="2"/><text x="48" y="29.5" text-anchor="middle" font-family="system-ui,Arial" font-weight="900" font-size="14" fill="#8a5a00">฿</text></g>' + sp(20, 30, 5) + sp(78, 30, 4);
+    return '<svg class="emb" viewBox="0 0 96 96" aria-hidden="true"><defs>' + gold + '</defs>' + body + '</svg>';
+  }
+  function celebrate(root) {
+    const box = root && root.querySelector('.result.win');
+    if (!box || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const n = +box.dataset.confetti || 0;
+    if (n) {
+      const cols = box.classList.contains('t-jackpot') ? ['#f5c542', '#ffdf6e', '#e74c3c', '#fff3b0', '#d99400', '#ff8a50']
+        : ['#7c4dff', '#e0457b', '#f5c542', '#1e7be0', '#0f9d6b', '#ff8a50'];
+      const c = document.createElement('div'); c.className = 'confetti';
+      for (let i = 0; i < n; i++) {
+        const p = document.createElement('i');
+        p.style.left = (Math.random() * 100) + '%';
+        p.style.background = cols[i % cols.length];
+        p.style.animationDuration = (1.8 + Math.random() * 2.2) + 's';
+        p.style.animationDelay = (Math.random() * .9) + 's';
+        if (i % 3 === 0) { p.style.width = '7px'; p.style.height = '7px'; p.style.borderRadius = '50%'; }
+        p.style.transform = 'rotate(' + Math.floor(Math.random() * 360) + 'deg)';
+        c.appendChild(p);
+      }
+      box.prepend(c);
+      setTimeout(() => c.remove(), 5000);
+    }
+    const tot = box.querySelector('.rtotal b');
+    if (tot && (box.classList.contains('t-jackpot') || box.classList.contains('t-big'))) {
+      const end = +tot.dataset.v, t0 = performance.now(), dur = 1400;
+      (function step(t) { const k = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - k, 3); tot.textContent = money(Math.round(end * e)); if (k < 1) requestAnimationFrame(step); })(t0);
+    }
+  }
+  /* ---------- ฉลองเต็มจอ (ยิ่งรางวัลใหญ่ ยิ่งอลังการ) ---------- */
+  const CEL = {
+    jackpot: { title: 'แจ็กพอต!', kicker: '✦ JACKPOT ✦', confetti: 260, coins: 2.4, fw: 320, dur: 9000, btn: 'รับโชคใหญ่ 🎉' },
+    big:     { title: 'รางวัลใหญ่!', kicker: '✦ BIG WIN ✦', confetti: 180, coins: 1, fw: 650, dur: 7000, btn: 'เยี่ยมไปเลย 🎉' },
+    mid:     { title: 'ถูกรางวัล!', kicker: '✦ WINNER ✦', confetti: 130, coins: .3, fw: 1300, dur: 5000, btn: 'ดีใจด้วย 🎉' },
+    small:   { title: 'ได้คืน!', kicker: '✦ LUCKY ✦', confetti: 80, coins: 0, fw: 0, dur: 3500, btn: 'โอเค 🍀' },
+  };
+  function showCelebration(o) {
+    const C = CEL[o.tier] || CEL.small, reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const old = document.querySelector('.cel'); if (old) old.remove();
+    const el = document.createElement('div');
+    el.className = 'cel t-' + o.tier + (o.tier === 'jackpot' ? ' shake' : '');
+    el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', C.title);
+    el.innerHTML = '<div class="beams"></div><div class="halo"></div><canvas></canvas>' +
+      '<div class="cel-box"><div class="cel-emb">' + emblem(o.tier) + '</div>' +
+      '<div class="cel-kicker">' + C.kicker + '</div><div class="cel-title">' + C.title + '</div>' +
+      '<div class="cel-prize">' + esc(o.prize) + '</div>' +
+      '<div class="cel-num">' + String(o.number).split('').map(ch => '<span class="dg">' + esc(ch) + '</span>').join('') + '</div>' +
+      (o.total ? '<div class="cel-amt"><span class="v">0</span><small>บาท</small></div>' : '') +
+      (o.more ? '<div class="cel-more">' + esc(o.more) + '</div>' : '') +
+      '<button class="cel-btn">' + C.btn + '</button><div class="cel-hint">แตะที่ว่างเพื่อปิด</div></div>';
+    document.body.appendChild(el);
+    let alive = true;
+    const close = () => { if (!alive) return; alive = false; el.classList.add('out'); setTimeout(() => el.remove(), 350); document.removeEventListener('keydown', onKey); };
+    const onKey = e => { if (e.key === 'Escape') close(); };
+    document.addEventListener('keydown', onKey);
+    el.onclick = e => { if (e.target === el || e.target.classList.contains('cel-btn') || !e.target.closest('.cel-box')) close(); };
+    el.querySelector('.cel-btn').focus({ preventScroll: true });
+    try { if (o.tier === 'jackpot' && navigator.vibrate) navigator.vibrate([120, 60, 120, 60, 260]); } catch (e) {}
+    // เลขสลากหมุนแบบสล็อต แล้วหยุดทีละหลัก
+    const dgs = el.querySelectorAll('.cel-num .dg'), numBox = el.querySelector('.cel-num');
+    if (!reduce) dgs.forEach((s, i) => {
+      const real = s.textContent, stopAt = performance.now() + 700 + i * 220;
+      (function roll(t) { if (!alive) return;
+        if (t < stopAt) { s.textContent = Math.floor(Math.random() * 10); requestAnimationFrame(roll); }
+        else { s.textContent = real; s.classList.add('land'); if (i === dgs.length - 1) numBox.classList.add('done'); } })(performance.now());
+    });
+    // นับเงินรางวัลขึ้น แล้วเด้ง
+    const v = el.querySelector('.cel-amt .v');
+    if (v) {
+      const end = o.total, t0 = performance.now() + 700 + dgs.length * 220, dur = o.tier === 'jackpot' ? 2400 : 1300;
+      (function step(t) { if (!alive) return; const k = Math.max(0, Math.min(1, (t - t0) / dur)), e = 1 - Math.pow(1 - k, 4);
+        v.textContent = money(Math.round(end * e)); if (k < 1) requestAnimationFrame(step); else v.parentNode.classList.add('done'); })(performance.now());
+    }
+    if (reduce) return;
+    // อนุภาค: พลุกระดาษ เหรียญทอง ดอกไม้ไฟ
+    const cv = el.querySelector('canvas'), ctx = cv.getContext('2d'), dpr = Math.min(2, devicePixelRatio || 1);
+    const W = () => cv.clientWidth, H = () => cv.clientHeight;
+    const fit = () => { cv.width = W() * dpr; cv.height = H() * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0); };
+    fit(); addEventListener('resize', fit);
+    const P = [], R = (a, b) => a + Math.random() * (b - a);
+    const COLS = o.tier === 'jackpot' ? ['#ffd34d', '#fff1a8', '#ff5a4e', '#ffb02e', '#ffffff', '#ff8a50']
+      : o.tier === 'big' ? ['#b99bff', '#ffd34d', '#ff6fa3', '#6aaeff', '#ffffff'] : ['#ffd34d', '#5fe0a4', '#6aaeff', '#ff6fa3', '#ffffff'];
+    const confetti = (n, x, y, spread) => { for (let i = 0; i < n; i++) { const a = R(-Math.PI, 0), s = R(4, spread);
+      P.push({ k: 'c', x: x, y: y, vx: Math.cos(a) * s, vy: Math.sin(a) * s - R(2, 6), w: R(6, 11), h: R(8, 15), r: R(0, 6), vr: R(-.3, .3), c: COLS[i % COLS.length], life: R(220, 360), wob: R(0, 6) }); } };
+    const coin = () => P.push({ k: 'o', x: R(0, W()), y: -30, vx: R(-.6, .6), vy: R(2.5, 5), s: R(10, 17), t: R(0, 6), vt: R(.12, .25), life: 600 });
+    const firework = () => { P.push({ k: 'r', x: R(W() * .15, W() * .85), y: H() + 10, vx: R(-1, 1), vy: -R(H() * .018, H() * .024), tY: R(H() * .12, H() * .42), c: COLS[Math.floor(R(0, COLS.length))], life: 200 }); };
+    const burst = (x, y, c) => { const n = o.tier === 'jackpot' ? 90 : 60; for (let i = 0; i < n; i++) { const a = i / n * Math.PI * 2, s = R(2, 6.5);
+      P.push({ k: 'b', x: x, y: y, vx: Math.cos(a) * s, vy: Math.sin(a) * s, c: Math.random() < .25 ? '#ffffff' : c, life: R(50, 85), max: 85 }); } };
+    // ระเบิดเปิดตัว
+    confetti(C.confetti / 2, W() * .5, H() * .36, 16);
+    setTimeout(() => { confetti(C.confetti / 4, 0, H() * .7, 18); confetti(C.confetti / 4, W(), H() * .7, 18); }, 250);
+    if (o.tier === 'jackpot' || o.tier === 'big') for (let i = 0; i < 3; i++) setTimeout(firework, i * 180);
+    const t0 = performance.now();
+    let lastFw = t0, coinAcc = 0;
+    (function frame(t) {
+      if (!alive) { removeEventListener('resize', fit); return; }
+      const spawning = t - t0 < C.dur;
+      if (spawning && C.fw && t - lastFw > C.fw) { firework(); lastFw = t; }
+      if (spawning && C.coins) { coinAcc += C.coins * .25; while (coinAcc >= 1) { coin(); coinAcc--; } }
+      ctx.clearRect(0, 0, W(), H());
+      for (let i = P.length - 1; i >= 0; i--) {
+        const p = P[i];
+        p.life--;
+        if (p.k === 'c') {
+          p.vy += .16; p.vx *= .985; p.vy *= .985; p.x += p.vx + Math.sin((p.wob += .1)) * .8; p.y += p.vy; p.r += p.vr;
+          ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.r); ctx.scale(1, Math.cos(p.wob)); ctx.fillStyle = p.c;
+          ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h); ctx.restore();
+        } else if (p.k === 'o') {
+          p.vy += .05; p.x += p.vx; p.y += p.vy; p.t += p.vt;
+          const sx = Math.abs(Math.cos(p.t));
+          ctx.save(); ctx.translate(p.x, p.y); ctx.scale(Math.max(.15, sx), 1);
+          const g = ctx.createRadialGradient(-p.s * .3, -p.s * .3, 1, 0, 0, p.s);
+          g.addColorStop(0, '#fff6c2'); g.addColorStop(.5, '#ffcf3f'); g.addColorStop(1, '#b97a00');
+          ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, p.s, 0, Math.PI * 2); ctx.fill();
+          ctx.strokeStyle = 'rgba(140,90,0,.7)'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(0, 0, p.s * .68, 0, Math.PI * 2); ctx.stroke();
+          if (sx > .45) { ctx.fillStyle = 'rgba(120,75,0,.85)'; ctx.font = '900 ' + Math.round(p.s * .95) + 'px system-ui'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('฿', 0, 1); }
+          ctx.restore();
+          if (p.y > H() + 40) p.life = 0;
+        } else if (p.k === 'r') {
+          p.x += p.vx; p.y += p.vy; p.vy *= .985;
+          ctx.fillStyle = p.c; ctx.globalAlpha = .9; ctx.beginPath(); ctx.arc(p.x, p.y, 2.6, 0, Math.PI * 2); ctx.fill();
+          ctx.globalAlpha = .35; ctx.fillRect(p.x - 1, p.y, 2, 18); ctx.globalAlpha = 1;
+          if (p.y <= p.tY || p.vy > -2) { burst(p.x, p.y, p.c); p.life = 0; }
+        } else if (p.k === 'b') {
+          p.vy += .07; p.vx *= .965; p.vy *= .965; p.x += p.vx; p.y += p.vy;
+          ctx.globalAlpha = Math.max(0, p.life / p.max); ctx.fillStyle = p.c;
+          ctx.beginPath(); ctx.arc(p.x, p.y, 2.3, 0, Math.PI * 2); ctx.fill(); ctx.globalAlpha = 1;
+        }
+        if (p.life <= 0 || p.y > H() + 60) P.splice(i, 1);
+      }
+      if (P.length > 1400) P.splice(0, P.length - 1400);
+      if (spawning || P.length) requestAnimationFrame(frame);
+    })(t0);
+  }
+  /** ชื่อรางวัลที่ใหญ่ที่สุด */
+  function topPrize(game, wins) {
+    const t = tierOf(game, wins);
+    const pick = (wins || []).slice().sort((a, b) => (b.amount || 0) - (a.amount || 0))[0];
+    return { tier: t, prize: (wins || []).map(w => w.name).join(' + ') || (pick && pick.name) || '' };
+  }
+  /** เปิดเว็บหลังผลออก: ฉลองเลขที่ถูกรางวัลใหม่ (ครั้งเดียวต่อใบ) */
+  function celebrateNewWins(list) {
+    let seen = [];
+    try { seen = JSON.parse(store.get('lotto_cel') || '[]'); } catch (e) {}
+    const recent = Date.now() - 20 * 86400000;
+    const fresh = (list || []).filter(t => t.status === 'win' && seen.indexOf(t.id) < 0 && Date.parse(t.date) >= recent);
+    (list || []).filter(t => t.status !== 'pending').forEach(t => { if (seen.indexOf(t.id) < 0) seen.push(t.id); });
+    store.set('lotto_cel', JSON.stringify(seen.slice(-400)));
+    if (!fresh.length) return;
+    fresh.sort((a, b) => TIER_RANK[tierOf(game, b.wins)] - TIER_RANK[tierOf(game, a.wins)] || b.total - a.total);
+    const best = fresh[0], tp = topPrize(game, best.wins), total = fresh.reduce((s, t) => s + (t.total || 0), 0);
+    const qty = fresh.reduce((s, t) => s + (t.qty || 1), 0);
+    showCelebration({ tier: tp.tier, number: best.number, prize: GAME[game].name + ' งวด ' + thDate(best.date, game === 'lao') + ' · ' + tp.prize,
+      total: game === 'lao' ? 0 : total, more: fresh.length > 1 || qty > 1 ? 'ถูกรวม ' + qty + ' ใบ' + (fresh.length > 1 ? ' (' + fresh.length + ' เลข)' : '') : '' });
+  }
+  function renderCheck(r) {
+    const d = r.draw, won = r.result.status === 'win';
+    const tier = won ? tierOf(r.game, r.result.wins) : '', T = TIER[tier];
+    let h = won
+      ? '<div class="result win t-' + tier + '" data-confetti="' + T.confetti + '">' + emblem(tier) +
+        '<div class="tierbadge">' + T.badge + '</div>' +
+        '<div class="rhead">' + T.head + '</div>' +
+        '<div class="rnum">' + esc(r.number) + '</div>'
+      : '<div class="result lose">' +
+        '<div class="rbig">🍀</div>' +
+        '<div class="rhead">เสียใจด้วย ไม่ถูกรางวัล</div>' +
+        '<div class="rnum">' + esc(r.number) + '</div>';
+    if (won) {
+      h += '<ul class="prizes">' + r.result.wins.map(w =>
+        '<li><span>' + esc(w.name) + '</span><b>' + (w.amount ? money(w.amount) + ' ฿' : '✓ ถูก') + '</b></li>').join('') + '</ul>';
+      if (r.game !== 'lao' && r.result.total) h += '<div class="rtotal">รวม <b data-v="' + r.result.total + '">' + money(r.result.total) + '</b> บาท</div>';
+    } else if (r.result.partial && r.game === 'n3') {
+      h += '<div class="muted small" style="margin-top:8px">* ยังไม่ประกาศเงินรางวัลงวดนี้</div>';
+    } else if (r.result.partial && r.game === 'th') {
+      h += '<div class="muted small" style="margin-top:8px">* งวดนี้ยังมีเฉพาะรางวัลหลัก ยังไม่มีผลรางวัลที่ 2–5 ให้ตรวจ</div>';
+    } else if (r.game === 'th') {
+      h += '<div class="muted small" style="margin-top:8px">ตรวจครบทุกรางวัลแล้ว (ที่ 1–5, ข้างเคียง, เลขหน้า/ท้าย)</div>';
+    }
+    h += '</div>';
+    h += '<div class="card"><div class="muted small" style="text-align:center;margin-bottom:8px">ผลงวด ' + thDate(d.date, r.game === 'lao') + '</div>' + latestGrid(r.game, d) + '</div>';
+    return h;
+  }
+  $('cBtn').onclick = () => {
+    const num = $('cNum').value.replace(/\D/g, '');
+    if (GAME[game].ticket.indexOf(num.length) < 0) {
+      $('cOut').innerHTML = '<div class="msg err">' + BADLEN[game] + '</div>'; return;
+    }
+    if (!$('cDate').value) { $('cOut').innerHTML = '<div class="msg err">เลือกงวดก่อน</div>'; return; }
+    $('cBtn').disabled = true;
+    $('cOut').innerHTML = '<div class="loading">กำลังตรวจ…</div>';
+    const g = game;
+    call('checkNumber', token, g, $('cDate').value, num)
+      .then(r => { if (game === g) { $('cOut').innerHTML = renderCheck(r); celebrate($('cOut'));
+        if (r.result.status === 'win') { const tp = topPrize(r.game, r.result.wins);
+          showCelebration({ tier: tp.tier, number: r.number, prize: tp.prize, total: r.game === 'lao' ? 0 : r.result.total }); } } })
+      .catch(e => { $('cOut').innerHTML = '<div class="msg err">' + esc(e.message) + '</div>'; })
+      .finally(() => { $('cBtn').disabled = false; });
+  };
+  $('cNum').addEventListener('keydown', e => { if (e.key === 'Enter') $('cBtn').click(); });
+
+  /* ---------- สุ่มเลข ---------- */
+  const rnd = n => { const a = new Uint32Array(1); crypto.getRandomValues(a); return a[0] % n; };
+  const shuffle = arr => { const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = rnd(i + 1); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+  const all100 = () => Array.from({length: 100}, (_, i) => i);
+
+  function pool2() {
+    if (!D || !D.total) return all100();
+    const idx = all100();
+    if (mode === 'hot') return idx.sort((a, b) => D.count2[b] - D.count2[a]).slice(0, 15);
+    if (mode === 'cold') { const g = i => D.gap2[i] === null ? 1e9 : D.gap2[i]; return idx.sort((a, b) => g(b) - g(a)).slice(0, 15); }
+    if (mode === 'year') { const p = idx.filter(i => D.recent2[i] > 0).sort((a, b) => D.recent2[b] - D.recent2[a]); return p.length >= 2 ? p : all100(); }
+    if (mode === 'bday') {
+      const ds = $('bday').value.replace(/\D/g, '').split('').map(Number);
+      if (ds.length < 2) return null;
+      const set = new Set();
+      for (let i = 0; i < ds.length; i++) for (let j = 0; j < ds.length; j++) if (i !== j) set.add(ds[i] * 10 + ds[j]);
+      return Array.from(set);
+    }
+    return all100();
+  }
+  function renderModeHint() {
+    $('modeHint').textContent = {
+      all: 'สุ่มจากเลข 00–99 ทั้งหมด เท่ากันทุกตัว',
+      hot: 'สุ่มจาก 15 เลขท้าย 2 ตัวที่ออกบ่อยที่สุด',
+      cold: 'สุ่มจาก 15 เลขที่ไม่ออกนานที่สุด (รวมเลขที่ไม่เคยออก)',
+      year: 'สุ่มจากเลขที่ออกใน ' + (D ? D.window : '') + ' งวดล่าสุด',
+      bday: 'จับคู่ตัวเลขที่คุณกรอก แล้วสุ่มจากคู่เหล่านั้น',
+    }[mode];
+    $('bday').classList.toggle('hidden', mode !== 'bday');
+  }
+  document.querySelectorAll('#modes .chip').forEach(c => c.onclick = () => {
+    mode = c.dataset.m;
+    document.querySelectorAll('#modes .chip').forEach(x => x.classList.toggle('on', x === c));
+    renderModeHint();
+  });
+  function why2(n) {
+    const c = D.count2[n], g = D.gap2[n];
+    return 'ออก ' + c + ' ครั้ง · ' + (g === null ? 'ไม่เคยออก' : g === 0 ? 'เพิ่งออกงวดล่าสุด' : 'ไม่ออกมา ' + g + ' งวด');
+  }
+  function makePick() {
+    const pool = pool2();
+    if (!pool) { $('modeHint').innerHTML = '<span class="err">กรอกตัวเลขอย่างน้อย 2 หลัก</span>'; return null; }
+    const two = shuffle(pool).slice(0, 2); if (two.length < 2) two.push(rnd(100));
+    const ds = mode === 'bday' ? $('bday').value.replace(/\D/g, '').split('').map(Number) : null;
+    const rd = () => ds && ds.length ? ds[rnd(ds.length)] : rnd(10);
+    const three = two.map(t => '' + rd() + pad(t, 2));
+    const big = game === 'n3' ? three[0] : game === 'lao' ? '' + rd() + three[0] : '' + rd() + rd() + rd() + three[0];
+    return { two: two.map(t => pad(t, 2)), three, big, draw: nextDraw(game) };
+  }
+  function roll(el, txt, ms) {
+    const t0 = performance.now();
+    return new Promise(res => (function f(t) {
+      if (t - t0 >= ms) { el.textContent = txt; return res(); }
+      el.textContent = Array.from({length: txt.length}, () => rnd(10)).join(''); requestAnimationFrame(f);
+    })(t0));
+  }
+  async function doPick() {
+    const p = makePick(); if (!p) return;
+    lastPick = Object.assign({ game }, p);
+    $('pickCard').classList.remove('hidden');
+    $('pickFor').textContent = GAME[game].name + ' · งวด ' + thDate(p.draw, game === 'lao') + ' (โดยประมาณ)';
+    ['w2a','w2b','w3a','w3b','wBig'].forEach(id => $(id).textContent = '');
+    $('goBtn').disabled = $('againBtn').disabled = true;
+    await Promise.all([roll($('p2a'), p.two[0], 600), roll($('p2b'), p.two[1], 750), roll($('p3a'), p.three[0], 900),
+      roll($('p3b'), p.three[1], 1050), roll($('pBig'), p.big, 1300)]);
+    $('w2a').textContent = why2(+p.two[0]); $('w2b').textContent = why2(+p.two[1]);
+    $('w3a').textContent = 'ลงท้ายด้วย ' + p.two[0]; $('w3b').textContent = 'ลงท้ายด้วย ' + p.two[1];
+    $('wBig').textContent = game === 'n3' ? '3 ตัวตรง ' + p.big + ' · 2 ตัวตรง ' + p.big.slice(1)
+      : game === 'lao' ? '3 ตัว ' + p.big.slice(1) + ' · 2 ตัว ' + p.big.slice(2)
+      : 'หน้า ' + p.big.slice(0,3) + ' · ท้าย ' + p.big.slice(3) + ' · 2 ตัว ' + p.big.slice(4);
+    $('goBtn').disabled = $('againBtn').disabled = false;
+    $('pickCard').scrollIntoView({behavior: 'smooth', block: 'nearest'});
+  }
+  $('goBtn').onclick = doPick; $('againBtn').onclick = doPick;
+  $('saveBtn').onclick = () => {
+    if (!lastPick || lastPick.game !== game) return;
+    $('tDate').value = lastPick.draw; $('tNum').value = lastPick.big;
+    document.querySelector('.tab[data-p="tix"]').click(); $('tNum').focus();
+    $('tMsg').className = 'msg'; $('tMsg').textContent = 'ตรวจเลขให้ตรงกับที่ซื้อจริง แล้วกดบันทึก';
+  };
+
+  /* ---------- สถิติ ---------- */
+  const STEPS = ['--s1','--s2','--s3','--s4','--s5','--s6','--s7'];
+  const values = () => metric === 'count' ? D.count2.slice() : metric === 'recent' ? D.recent2.slice() : D.gap2.map(g => g === null ? D.total : g);
+  function colorFor(v, max) {
+    if (!v || !max) return { bg: 'var(--zero)', fg: 'var(--muted)' };
+    const i = Math.max(0, Math.min(STEPS.length - 1, Math.floor((v / max) * STEPS.length - 1e-9)));
+    const dark = document.documentElement.dataset.theme === 'dark';
+    return { bg: 'var(' + STEPS[i] + ')', fg: (dark ? i <= 3 : i >= 3) ? '#fff' : '#0d1b2e' };
+  }
+  function cellText(n) {
+    const g = D.gap2[n];
+    return '<b>' + pad(n,2) + '</b> · ออก ' + D.count2[n] + ' ครั้ง · ' +
+      (g === null ? 'ไม่เคยออก' : g === 0 ? 'เพิ่งออกงวดล่าสุด' : 'ไม่ออกมา ' + g + ' งวด') + ' · ' + D.window + ' งวดหลัง ' + D.recent2[n] + ' ครั้ง';
+  }
+  function renderStats() {
+    if (!D.total) return;
+    $('statRange').textContent = D.total + ' งวด · ' + thDate(D.from) + ' – ' + thDate(D.to);
+    const v = values(), max = Math.max(...v), heat = $('heat');
+    heat.innerHTML = '';
+    v.forEach((x, n) => {
+      const c = colorFor(x, max), b = document.createElement('button');
+      b.className = 'cell'; b.style.background = c.bg; b.style.color = c.fg; b.textContent = pad(n, 2);
+      b.setAttribute('aria-label', pad(n,2) + ' ค่า ' + x);
+      b.onclick = () => { heat.querySelectorAll('.sel').forEach(s => s.classList.remove('sel')); b.classList.add('sel'); $('cellDetail').innerHTML = cellText(n); };
+      b.onmousemove = e => { const t = $('tip'); t.innerHTML = cellText(n); t.style.display = 'block';
+        t.style.left = Math.min(e.clientX + 12, innerWidth - t.offsetWidth - 8) + 'px'; t.style.top = (e.clientY + 14) + 'px'; };
+      b.onmouseleave = () => { $('tip').style.display = 'none'; };
+      heat.appendChild(b);
+    });
+    $('legend').innerHTML = '<span>0</span>' + ['--zero'].concat(STEPS).map(s => '<i style="background:var(' + s + ')"></i>').join('') +
+      '<span>' + max + ' ' + (metric === 'gap' ? 'งวด' : 'ครั้ง') + '</span>';
+    const idx = Array.from({length: 100}, (_, i) => i);
+    $('hotList').innerHTML = idx.slice().sort((a, b) => D.count2[b] - D.count2[a] || a - b).slice(0, 10)
+      .map(n => '<li><b>' + pad(n,2) + '</b><span>' + D.count2[n] + ' ครั้ง</span></li>').join('');
+    $('coldList').innerHTML = idx.filter(i => D.gap2[i] !== null).sort((a, b) => D.gap2[b] - D.gap2[a] || a - b).slice(0, 10)
+      .map(n => '<li><b>' + pad(n,2) + '</b><span>' + D.gap2[n] + ' งวด</span></li>').join('');
+    const never = idx.filter(i => D.gap2[i] === null);
+    $('never').textContent = never.length ? never.map(n => pad(n,2)).join('  ') : 'ไม่มี — ออกครบทุกเลขแล้ว';
+    $('top3').innerHTML = D.top3.filter(x => x[1] > 1).slice(0, 10).map(x => '<li><b>' + x[0] + '</b><span>' + x[1] + ' ครั้ง</span></li>').join('')
+      || '<li class="muted">ยังไม่มีเลขที่ออกซ้ำ</li>';
+  }
+  document.querySelectorAll('#metric button').forEach(b => b.onclick = () => {
+    metric = b.dataset.k;
+    document.querySelectorAll('#metric button').forEach(x => x.classList.toggle('on', x === b));
+    $('cellDetail').textContent = 'แตะช่องตัวเลขเพื่อดูรายละเอียด';
+    renderStats();
+  });
+
+  /* ---------- เลขที่ซื้อ ---------- */
+  function renderTickets(list) {
+    if (!list || !list.length) { $('tList').innerHTML = '<div class="muted">ยังไม่มีเลขที่บันทึก</div>'; $('tSum').innerHTML = ''; return; }
+    const done = list.filter(t => t.status !== 'pending'), wins = done.filter(t => t.status === 'win');
+    $('tSum').innerHTML = '<div><b>' + list.length + '</b><span class="muted small">ที่บันทึก</span></div>' +
+      '<div><b>' + wins.length + '/' + done.length + '</b><span class="muted small">ถูก/ตรวจแล้ว</span></div>' +
+      (game !== 'lao' ? '<div><b>' + money(done.reduce((s, t) => s + t.total, 0)) + '</b><span class="muted small">รางวัล (บาท)</span></div>'
+                     : '<div><b>' + list.filter(t => t.status === 'pending').length + '</b><span class="muted small">รอผล</span></div>');
+    $('tList').innerHTML = list.map(t => {
+      const badge = t.status === 'pending' ? '<span class="badge b-pend">รอผล</span>'
+        : t.status === 'win' ? '<span class="badge b-win tier t-' + tierOf(game, t.wins) + '">' + (tierOf(game, t.wins) === 'jackpot' ? '👑 ' : '') + (t.total ? 'ถูก ' + money(t.total) + ' ฿' : 'ถูก') + '</span>'
+        : '<span class="badge b-lose">ไม่ถูก</span>';
+      const detail = t.status === 'win' ? t.wins.map(w => w.name).join(' + ')
+        : t.partial && t.status === 'lose' ? 'ตรวจเฉพาะรางวัลหลัก' : '';
+      const q = t.qty || 1;
+      return '<div class="tk"><div class="grow"><div class="n">' + esc(t.number) + '</div>' +
+        '<div class="qty"><button data-q="' + esc(t.id) + '" data-v="' + (q - 1) + '"' + (q <= 1 ? ' disabled' : '') + ' aria-label="ลดจำนวน">−</button><span>' + q + ' ใบ</span>' +
+        '<button data-q="' + esc(t.id) + '" data-v="' + (q + 1) + '" aria-label="เพิ่มจำนวน">+</button></div>' +
+        '<div class="d">งวด ' + thDate(t.date, game === 'lao') +
+        (detail ? ' · ' + esc(detail) : '') +
+        (t.matched ? '<br><span class="moved">งวดเลื่อน · ตรวจกับผลวันที่ ' + thDate(t.matched) + '</span>' : '') + '</div></div>' + badge + '<button class="x" title="ลบ" data-id="' + esc(t.id) + '">×</button></div>';
+    }).join('');
+    $('tList').querySelectorAll('.x').forEach(b => b.onclick = () => {
+      b.disabled = true;
+      call('deleteTicket', token, b.dataset.id, game).then(l => { D.tickets = l; renderTickets(l); loadFollow(true); });
+    });
+    $('tList').querySelectorAll('[data-q]').forEach(b => b.onclick = () => {
+      b.disabled = true;
+      call('setTicketQty', token, b.dataset.q, +b.dataset.v, game).then(l => { D.tickets = l; renderTickets(l); loadFollow(true); })
+        .catch(e => { b.disabled = false; $('tMsg').className = 'msg err'; $('tMsg').textContent = e.message; });
+    });
+  }
+  $('tAdd').onclick = () => {
+    const num = $('tNum').value.replace(/\D/g, '');
+    $('tMsg').className = 'msg';
+    if (GAME[game].ticket.indexOf(num.length) < 0) { $('tMsg').className = 'msg err'; $('tMsg').textContent = BADLEN[game]; return; }
+    $('tAdd').disabled = true;
+    const g = game;
+    const qty = Math.max(1, Math.min(999, parseInt($('tQty').value, 10) || 1));
+    call('addTicket', token, {game: g, date: $('tDate').value, number: num, qty: qty})
+      .then(l => { cache[g].tickets = l; if (game === g) { renderTickets(l); $('tNum').value = ''; $('tQty').value = 1; $('tMsg').textContent = '✅ บันทึกแล้ว ' + qty + ' ใบ'; loadFollow(true);
+          call('getMoney', token).then(mo => { moneyData = mo; if (mo.warn) { $('tMsg').className = 'msg err'; $('tMsg').textContent = '✅ บันทึกแล้ว · ' + mo.warn; } }).catch(() => {}); } })
+      .catch(e => { $('tMsg').className = 'msg err'; $('tMsg').textContent = e.message; })
+      .finally(() => { $('tAdd').disabled = false; });
+  };
+
+  /* ---------- ค้นหา ---------- */
+  function hl(num, q, tail) {
+    if (!num) return '–';
+    if (num === q) return '<mark>' + num + '</mark>';
+    if (tail && num.endsWith(q)) return num.slice(0, -q.length) + '<mark>' + q + '</mark>';
+    return num;
+  }
+  function doSearch() {
+    const q = $('q').value.replace(/\D/g, '');
+    if (GAME[game].search.indexOf(q.length) < 0) { $('qOut').innerHTML = '<div class="msg err">กรอกเลข ' + $('q').placeholder + '</div>'; return; }
+    $('qOut').innerHTML = '<div class="loading">กำลังค้นหา…</div>';
+    const g = game;
+    call('search', token, g, q).then(r => {
+      if (game !== g) return;
+      const pct = r.totalDraws ? (r.hits.length / r.totalDraws * 100).toFixed(1) : 0;
+      let h = '<div class="card" style="background:var(--soft);border-color:var(--soft-line)">เลข <b>' + r.query + '</b> ออก <b>' + r.hits.length +
+        '</b> ครั้ง จาก ' + r.totalDraws + ' งวด (' + pct + '%)' + (r.lastSeen ? '<br>ออกล่าสุด งวด ' + thDate(r.lastSeen, g === 'lao') : '') + '</div>';
+      h += r.hits.length ? r.hits.slice(0, 100).map(d => g === 'n3'
+        ? '<div class="draw"><b>งวด ' + thDate(d.date) + '</b><div>' + d.where.map(w => '<span class="tag">' + w + '</span>').join('') + '</div>' +
+          '<div class="grid"><span>3 ตัวตรง <b>' + hl(d.s3, q) + '</b>' + (d.p3 ? ' · ' + money(d.p3) + ' ฿' : '') + '</span>' +
+          '<span>2 ตัวตรง <b>' + hl(d.s2, q) + '</b>' + (d.p2 ? ' · ' + money(d.p2) + ' ฿' : '') + '</span>' +
+          '<span>สลับหลัก <b>' + d.sw.map(x => hl(x, q)).join(' ') + '</b></span></div></div>'
+        : g === 'lao'
+        ? '<div class="draw"><b>งวด ' + thDate(d.date, true) + '</b> <span class="tag">' + d.where[0] + '</span>' +
+          '<div class="grid"><span>4 ตัว <b>' + hl(d.four, q, true) + '</b></span><span>6 ตัว <b>' + (d.six ? hl(d.six, q, true) : '–') + '</b></span></div></div>'
+        : '<div class="draw"><b>งวด ' + thDate(d.date) + '</b><div>' + d.where.map(w => '<span class="tag">' + w + '</span>').join('') + '</div>' +
+          '<div class="grid"><span>รางวัลที่ 1 <b>' + hl(d.first, q, true) + '</b></span><span>ท้าย 2 ตัว <b>' + hl(d.back2, q) + '</b></span>' +
+          '<span>หน้า 3 ตัว <b>' + (d.front3.map(x => hl(x, q)).join(' ') || '–') + '</b></span>' +
+          '<span>ท้าย 3 ตัว <b>' + (d.back3.map(x => hl(x, q)).join(' ') || '–') + '</b></span></div></div>').join('')
+        : '<div class="muted" style="padding:10px 0">ยังไม่เคยออกในข้อมูลที่มี</div>';
+      $('qOut').innerHTML = h;
+    }).catch(e => { $('qOut').innerHTML = '<div class="msg err">' + esc(e.message) + '</div>'; });
+  }
+  $('qBtn').onclick = doSearch;
+  $('q').addEventListener('keydown', e => { if (e.key === 'Enter') doSearch(); });
+
+  /* ---------- ผู้ดูแล ---------- */
+  const STATUS = { approved: 'ใช้งานได้', pending: 'รออนุมัติ', rejected: 'ปิดใช้งาน' };
+  function renderMembers(list, temp) {
+    const pend = list.filter(m => m.status === 'pending');
+    $('pendingList').innerHTML = pend.length ? pend.map(m =>
+      '<div class="mem"><div class="grow"><b>' + esc(m.name) + '</b> <span class="muted small">@' + esc(m.username) + ' · สมัคร ' + esc(m.created) + '</span></div>' +
+      '<div class="acts"><button class="mini" data-u="' + esc(m.username) + '" data-a="approve">อนุมัติ</button>' +
+      '<button class="mini ghost" data-u="' + esc(m.username) + '" data-a="reject">ปฏิเสธ</button></div></div>').join('')
+      : '<span class="muted small">ไม่มีคำขอใหม่</span>';
+    $('memberList').innerHTML = list.filter(m => m.status !== 'pending').map(m => {
+      const self = m.username === user.username;
+      const acts = self ? '<span class="muted small">(คุณ)</span>' :
+        (m.status === 'approved' ? '<button class="mini ghost" data-u="' + esc(m.username) + '" data-a="reject">ปิดใช้งาน</button>'
+                                 : '<button class="mini ghost" data-u="' + esc(m.username) + '" data-a="approve">เปิดใช้งาน</button>') +
+        (m.role === 'admin' ? '<button class="mini ghost" data-u="' + esc(m.username) + '" data-a="member">ถอดผู้ดูแล</button>'
+                            : '<button class="mini ghost" data-u="' + esc(m.username) + '" data-a="admin">ตั้งเป็นผู้ดูแล</button>') +
+        '<button class="mini ghost" data-u="' + esc(m.username) + '" data-a="reset">รีเซ็ตรหัส</button>' +
+        '<button class="mini ghost" data-u="' + esc(m.username) + '" data-a="delete">ลบ</button>';
+      return '<div class="mem"><div class="grow"><b>' + esc(m.name) + '</b><span class="pill">' + (m.role === 'admin' ? 'ผู้ดูแล' : 'สมาชิก') + '</span>' +
+        '<span class="pill">' + (STATUS[m.status] || m.status) + '</span><div class="muted small">@' + esc(m.username) + '</div></div><div class="acts">' + acts + '</div></div>';
+    }).join('') || '<span class="muted small">ยังไม่มีสมาชิก</span>';
+    document.querySelectorAll('#p-admin [data-a]').forEach(b => b.onclick = () => {
+      const a = b.dataset.a, u = b.dataset.u;
+      if ((a === 'delete' || a === 'reset') && !confirmInline(b)) return;
+      b.disabled = true;
+      call('setMember', token, u, a).then(r => {
+        renderMembers(r.members);
+        $('memMsg').className = 'msg ok';
+        $('memMsg').textContent = r.tempPassword ? 'รหัสชั่วคราวของ @' + u + ': ' + r.tempPassword + ' (แจ้งให้เขาเปลี่ยนหลังเข้าระบบ)' : 'อัปเดตแล้ว';
+      }).catch(e => { $('memMsg').className = 'msg err'; $('memMsg').textContent = e.message; b.disabled = false; });
+    });
+  }
+  // ยืนยันแบบกดซ้ำ (ไม่ใช้ confirm() ที่บล็อกหน้า)
+  function confirmInline(b) {
+    if (b.dataset.armed) return true;
+    b.dataset.armed = '1'; const t = b.textContent; b.textContent = 'กดอีกครั้งเพื่อยืนยัน';
+    setTimeout(() => { delete b.dataset.armed; b.textContent = t; }, 3000);
+    return false;
+  }
+  function loadMembers() {
+    if (!user || user.role !== 'admin') return;
+    call('listMembers', token).then(l => renderMembers(l)).catch(e => { $('pendingList').innerHTML = '<span class="err">' + esc(e.message) + '</span>'; });
+  }
+  $('refreshBtn').onclick = () => {
+    $('refreshBtn').disabled = true; $('refreshMsg').className = 'msg'; $('refreshMsg').textContent = 'กำลังดึงผล…';
+    call('refreshNow', token).then(m => { $('refreshMsg').textContent = m; ['th', 'lao', 'n3'].forEach(k => { delete cache[k]; delete tipsCache[k]; delete followCache[k]; }); setGame(game); })
+      .catch(e => { $('refreshMsg').className = 'msg err'; $('refreshMsg').textContent = e.message; })
+      .finally(() => { $('refreshBtn').disabled = false; });
+  };
+  function drawSubmit(form, g) {
+    form.onsubmit = e => {
+      e.preventDefault();
+      const data = Object.assign({ game: g }, Object.fromEntries(new FormData(form).entries()));
+      $('drawMsg').className = 'msg'; $('drawMsg').textContent = 'กำลังบันทึก…';
+      call('addDraw', token, data).then(m => { $('drawMsg').className = 'msg ok'; $('drawMsg').textContent = '✅ ' + m; form.reset(); delete cache[g]; if (game === g) setGame(g); })
+        .catch(err => { $('drawMsg').className = 'msg err'; $('drawMsg').textContent = err.message; });
+    };
+  }
+  drawSubmit($('thForm'), 'th'); drawSubmit($('laoForm'), 'lao'); drawSubmit($('n3Form'), 'n3');
+  function renderN3Pay() {
+    const show = game === 'n3' && D.n3pay && D.n3pay.length;
+    $('n3PayCard').classList.toggle('hidden', !show);
+    if (!show) return;
+    const m = v => v ? money(v) : '–';
+    $('n3Pay').innerHTML = '<tr><th>งวด</th><th>เลข</th><th>3 ตรง</th><th>สลับ</th><th>2 ตรง</th><th>พิเศษ</th></tr>' +
+      D.n3pay.slice().reverse().map(r => '<tr><td>' + thDate(r.date).replace(/ \d+$/, '') + '</td><td><b>' + r.s3 + '</b></td><td>' + m(r.p3) +
+        '</td><td>' + m(r.psw) + '</td><td>' + m(r.p2) + '</td><td>' + m(r.psp) + '</td></tr>').join('');
+  }
+
+  $('pwForm').onsubmit = e => {
+    e.preventDefault();
+    const f = Object.fromEntries(new FormData(e.target).entries());
+    call('changePassword', token, f.old, f.new1).then(m => { $('pwMsg').className = 'msg ok'; $('pwMsg').textContent = m; e.target.reset(); })
+      .catch(err => { $('pwMsg').className = 'msg err'; $('pwMsg').textContent = err.message; });
+  };
+
+  /* ---------- SVG icons (แทน emoji) ---------- */
+  const ICONS = {
+    dice: '<rect class="d" x="3" y="3" width="18" height="18" rx="5"/><rect x="3" y="3" width="18" height="18" rx="5"/><g class="s"><circle cx="8.3" cy="8.3" r="1.6"/><circle cx="15.7" cy="8.3" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="8.3" cy="15.7" r="1.6"/><circle cx="15.7" cy="15.7" r="1.6"/></g>',
+    flame: '<path class="d" d="M12 21.5c-4 0-7.2-2.9-7.2-6.8 0-3.4 2.3-5.5 4-7.5.3 1.9 1.2 3.1 2.5 3.7C11.4 7.5 12.7 4.6 15.2 3c-.2 2.9 1 4.8 2.4 6.4 1.2 1.4 1.8 2.9 1.8 5.3 0 3.9-3.3 6.8-7.4 6.8z"/><path d="M12 21.5c-4 0-7.2-2.9-7.2-6.8 0-3.4 2.3-5.5 4-7.5.3 1.9 1.2 3.1 2.5 3.7C11.4 7.5 12.7 4.6 15.2 3c-.2 2.9 1 4.8 2.4 6.4 1.2 1.4 1.8 2.9 1.8 5.3 0 3.9-3.3 6.8-7.4 6.8z"/><path class="s" d="M12 21.5c-1.8 0-3.1-1.3-3.1-3 0-1.7 1.3-2.7 2.1-3.8.5 1 1.1 1.5 1.9 1.7.4-.9 1-1.7 1.7-2.1.3 1.3.6 2.1.6 3.4 0 2.2-1.4 3.8-3.2 3.8z"/>',
+    trophy: '<path class="d" d="M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M7 6H4.5a.5.5 0 0 0-.5.5C4 9 5.5 11 7.6 11.3M17 6h2.5a.5.5 0 0 1 .5.5c0 2.5-1.5 4.5-3.6 4.8"/><path d="M12 14v3.5"/><path class="d" d="M8.5 20.5h7l-.8-3h-5.4z"/><path d="M8.5 20.5h7l-.8-3h-5.4z"/>',
+    check: '<circle class="d" cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="9"/><path d="m8.3 12.2 2.5 2.5 4.9-5.2"/>',
+    chart: '<rect class="d" x="4" y="11" width="4" height="9" rx="1.3"/><rect class="d" x="10" y="5" width="4" height="15" rx="1.3"/><rect class="d" x="16" y="13.5" width="4" height="6.5" rx="1.3"/><rect x="4" y="11" width="4" height="9" rx="1.3"/><rect x="10" y="5" width="4" height="15" rx="1.3"/><rect x="16" y="13.5" width="4" height="6.5" rx="1.3"/>',
+    ticket: '<path class="d" d="M3 9V7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2a2.5 2.5 0 0 0 0 5v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2a2.5 2.5 0 0 0 0-5z"/><path d="M3 9V7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2a2.5 2.5 0 0 0 0 5v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2a2.5 2.5 0 0 0 0-5z"/><path d="M15 5.5v1.5m0 3v2m0 3v2"/><path d="M7.5 10h4M7.5 13.5h3"/>',
+    wallet: '<rect class="d" x="3" y="7" width="18" height="13" rx="3"/><path d="M5 7V6.5A2.5 2.5 0 0 1 7.5 4H17a1.5 1.5 0 0 1 1.5 1.5V7"/><rect x="3" y="7" width="18" height="13" rx="3"/><path d="M21 11.5h-4a2 2 0 0 0 0 4h4"/><circle class="s" cx="16.8" cy="13.5" r="1.1"/>',
+    search: '<circle class="d" cx="10.5" cy="10.5" r="6.5"/><circle cx="10.5" cy="10.5" r="6.5"/><path d="m20 20-4.6-4.6"/><path d="M8 8.5a3 3 0 0 1 2.5-1.5" opacity=".7"/>',
+    shield: '<path class="d" d="M12 3 4.5 6v5.5c0 4.6 3.2 8 7.5 9.5 4.3-1.5 7.5-4.9 7.5-9.5V6z"/><path d="M12 3 4.5 6v5.5c0 4.6 3.2 8 7.5 9.5 4.3-1.5 7.5-4.9 7.5-9.5V6z"/><path d="m8.8 12 2.2 2.2 4.2-4.4"/>',
+    key: '<circle class="d" cx="8" cy="15" r="4.5"/><circle cx="8" cy="15" r="4.5"/><path d="m11.2 11.8 8.8-8.8m-4 4 3 3m-5.2-.8 2 2"/><circle class="s" cx="8" cy="15" r="1.3"/>',
+    bell: '<path class="d" d="M6 16V11a6 6 0 1 1 12 0v5l1.5 2h-15z"/><path d="M6 16V11a6 6 0 1 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/>',
+    logo: '<circle class="d" cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle class="s" cx="12" cy="12" r="1.6"/>',
+    sun: '<circle class="d" cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="4.5"/><path d="M12 2.5v2M12 19.5v2M4.6 4.6l1.4 1.4M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4 6 18M18 6l1.4-1.4"/>',
+    moon: '<path class="d" d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>',
+    logout: '<path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3"/><path d="M10 17l-5-5 5-5M5 12h11"/>',
+  };
+  const svgIcon = name => '<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (ICONS[name] || '') + '</svg>';
+  document.querySelectorAll('[data-ic]').forEach(el => el.insertAdjacentHTML('afterbegin',
+    el.classList.contains('tab') ? '<span class="tchip">' + svgIcon(el.dataset.ic) + '</span>' : svgIcon(el.dataset.ic)));
+
+  /* ---------- โลโก้ + ชื่อเว็บ (แก้ชื่อที่ BRAND บรรทัดเดียว) ---------- */
+  const BRAND = 'เลขเด็ด 88';
+  const logoSvg = id => '<svg viewBox="0 0 48 48" aria-hidden="true"><defs><radialGradient id="' + id + '" cx=".35" cy=".3" r=".8">' +
+    '<stop offset="0" stop-color="#ff6b5e"/><stop offset=".6" stop-color="#c62a24"/><stop offset="1" stop-color="#7d1512"/></radialGradient></defs>' +
+    '<circle cx="24" cy="24" r="20" fill="url(#' + id + ')"/><circle cx="24" cy="24" r="11" fill="#fff"/>' +
+    '<text x="24" y="29.5" text-anchor="middle" font-family="system-ui,Arial,sans-serif" font-weight="800" font-size="15" fill="#b4231f">88</text>' +
+    '<ellipse cx="16" cy="12.5" rx="5" ry="2.6" fill="#fff" opacity=".35" transform="rotate(-30 16 12.5)"/></svg>';
+  document.querySelectorAll('.logo-slot').forEach((el, i) => { el.innerHTML = logoSvg('lg' + i); });
+  document.querySelectorAll('.brand').forEach(el => { el.textContent = BRAND; });
+  document.title = BRAND;
+
+  /* ---------- ธีม สว่าง/มืด (ค่าเริ่มต้น: สว่าง) ---------- */
+  function applyTheme(t) {
+    if (t === 'dark') document.documentElement.dataset.theme = 'dark'; else delete document.documentElement.dataset.theme;
+    const b = $('themeBtn'); if (b) b.innerHTML = svgIcon(t === 'dark' ? 'sun' : 'moon');
+    if (typeof D !== 'undefined' && D) try { renderStats(); } catch (e) {}
+  }
+  applyTheme(store.get('lotto_theme') === 'dark' ? 'dark' : 'light');
+  $('themeBtn').onclick = () => {
+    const t = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+    store.set('lotto_theme', t); applyTheme(t);
+  };
+
+
+  /* ---------- เลขเด็ดประจำงวด ---------- */
+  const tipsCache = {};
+  /* ---------- สรุปเงิน ---------- */
+  let moneyData = null;
+  const TH_MS = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  const ymTxt = ym => TH_MS[+ym.slice(5) - 1] + ' ' + String(+ym.slice(0, 4) + 543).slice(2);
+  const signed = v => '<span class="' + (v >= 0 ? 'pos' : 'neg') + '">' + (v >= 0 ? '+' : '−') + money(Math.abs(v)) + '</span>';
+  function loadMoney() {
+    if (moneyData) renderMoney(moneyData);
+    call('getMoney', token).then(m => { moneyData = m; renderMoney(m); })
+      .catch(e => { $('mMonth').innerHTML = '<div class="msg err">' + esc(e.message) + '</div>'; });
+  }
+  function renderMoney(m) {
+    const c = m.month, net = c.won - c.spent;
+    let h = '<div class="mhero"><div><b>' + money(c.spent) + '</b><span>ซื้อ (บาท)</span></div><div><b>' + money(c.won) + '</b><span>ได้คืน</span></div>' +
+      '<div><b>' + signed(net) + '</b><span>' + (net >= 0 ? 'กำไร' : 'ขาดทุน') + '</span></div></div>';
+    if (m.budget) {
+      const pct = Math.min(100, c.pct), cls = c.pct > 100 ? 'over' : c.pct >= 80 ? 'warn' : '';
+      h += '<div class="bar ' + cls + '" role="progressbar" aria-valuenow="' + c.pct + '" aria-valuemin="0" aria-valuemax="100"><i style="width:' + pct + '%"></i></div>' +
+        '<div class="barlbl"><span>ใช้งบ ' + c.pct + '%</span><span>' + (c.left >= 0 ? 'เหลือ ' + money(c.left) : 'เกิน ' + money(-c.left)) + ' / ' + money(m.budget) + ' บาท</span></div>';
+    } else h += '<div class="muted small" style="margin-top:10px">ยังไม่ได้ตั้งงบ — ตั้งได้ด้านล่าง</div>';
+    if (m.warn) h += '<div class="msg err" style="margin-top:8px">' + esc(m.warn) + '</div>';
+    if (c.pending) h += '<div class="muted small" style="margin-top:6px">รอผลอยู่ ' + money(c.pending) + ' บาท</div>';
+    $('mMonth').innerHTML = h;
+    renderMoneyChart(m.months);
+    const G = { th: 'หวยไทย', n3: 'สลาก N3', lao: 'หวยลาว' };
+    const row = (lbl, o) => '<tr><td>' + lbl + '</td><td>' + money(o.qty) + '</td><td>' + money(o.spent) + '</td><td>' + money(o.won) + '</td><td>' + signed(o.won - o.spent) +
+      '</td><td>' + (o.spent ? Math.round(o.won / o.spent * 100) + '%' : '–') + '</td></tr>';
+    const head = '<tr><th></th><th>ใบ</th><th>ซื้อ</th><th>ได้คืน</th><th>สุทธิ</th><th>คืน</th></tr>';
+    $('mGames').innerHTML = head + ['th', 'n3', 'lao'].map(g => row(G[g], m.games[g])).join('');
+    $('mYears').innerHTML = m.years.length ? head + m.years.map(y => row('พ.ศ. ' + (+y.year + 543), y)).join('') : '<tr><td class="muted">ยังไม่มีข้อมูล</td></tr>';
+    $('mLaoNote').textContent = 'หวยลาว: ' + (m.laoPrice ? 'คิดราคาใบละ ' + money(m.laoPrice) + ' บาท' : 'ยังไม่คิดราคา (ตั้งได้ด้านล่าง)') + ' · ไม่นับเงินรางวัล เพราะอัตราจ่ายแต่ละเจ้าไม่เท่ากัน';
+    const f = $('mForm'); f.budget.value = m.budget || ''; f.laoPrice.value = m.laoPrice || '';
+  }
+  function renderMoneyChart(ms) {
+    const W = 340, H = 170, L = 34, B = 22, T = 8, iw = W - L - 6, ih = H - B - T;
+    const max = Math.max(100, ...ms.map(x => Math.max(x.spent, x.won)));
+    const step = Math.pow(10, Math.floor(Math.log10(max))), top = Math.ceil(max / step) * step;
+    const y = v => T + ih - v / top * ih, bw = iw / ms.length, w = Math.max(3, bw * 0.32);
+    const k = v => v >= 1000 ? (v / 1000).toFixed(v % 1000 ? 1 : 0) + 'k' : v;
+    let s = '<svg class="mchart" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="กราฟซื้อและได้คืนรายเดือน"><g class="g">';
+    [0, .5, 1].forEach(f => { const v = top * f; s += '<line class="grid" x1="' + L + '" x2="' + (W - 6) + '" y1="' + y(v) + '" y2="' + y(v) + '"/><text x="' + (L - 4) + '" y="' + (y(v) + 3) + '" text-anchor="end">' + k(v) + '</text>'; });
+    ms.forEach((m, i) => {
+      const x = L + i * bw + bw / 2;
+      if (m.spent) s += '<rect class="sp" x="' + (x - w - 1) + '" y="' + y(m.spent) + '" width="' + w + '" height="' + (T + ih - y(m.spent)) + '" rx="2"/>';
+      if (m.won) s += '<rect class="wn" x="' + (x + 1) + '" y="' + y(m.won) + '" width="' + w + '" height="' + (T + ih - y(m.won)) + '" rx="2"/>';
+      if (i % 2 === ms.length % 2 || ms.length <= 6) s += '<text x="' + x + '" y="' + (H - 6) + '" text-anchor="middle">' + ymTxt(m.ym).split(' ')[0] + '</text>';
+      s += '<rect class="hit" data-i="' + i + '" x="' + (x - bw / 2) + '" y="' + T + '" width="' + bw + '" height="' + ih + '"/>';
+    });
+    s += '</g></svg>';
+    $('mChart').innerHTML = s;
+    const show = (i, e) => {
+      const m = ms[i], net = m.won - m.spent;
+      const txt = '<b>' + ymTxt(m.ym) + '</b> · ซื้อ ' + money(m.spent) + ' · ได้คืน ' + money(m.won) + ' · สุทธิ ' + signed(net) + (m.qty ? ' · ' + m.qty + ' ใบ' : '');
+      $('mDetail').innerHTML = txt;
+      if (e) { const t = $('tip'); t.innerHTML = txt; t.style.display = 'block'; t.style.left = Math.min(e.clientX + 12, innerWidth - t.offsetWidth - 8) + 'px'; t.style.top = (e.clientY + 14) + 'px'; }
+    };
+    $('mChart').querySelectorAll('.hit').forEach(r => {
+      r.onclick = () => show(+r.dataset.i);
+      r.onmousemove = e => show(+r.dataset.i, e);
+      r.onmouseleave = () => { $('tip').style.display = 'none'; };
+    });
+  }
+  $('mForm').onsubmit = e => {
+    e.preventDefault();
+    const f = Object.fromEntries(new FormData(e.target).entries());
+    $('mMsg').className = 'msg'; $('mMsg').textContent = 'กำลังบันทึก…';
+    call('setMoneyPrefs', token, f).then(m => { moneyData = m; renderMoney(m); $('mMsg').className = 'msg ok'; $('mMsg').textContent = '✅ บันทึกแล้ว'; })
+      .catch(err => { $('mMsg').className = 'msg err'; $('mMsg').textContent = err.message; });
+  };
+
+  /* ---------- ควรตามเลขงวดล่าสุดไหม ---------- */
+  const followCache = {};
+  function loadFollow(force) {
+    const g = game;
+    if (force) delete followCache[g];
+    if (followCache[g]) { renderFollow(followCache[g]); return; }
+    $('followOut').innerHTML = '<div class="loading">กำลังวิเคราะห์เลขของคุณ…</div>';
+    call('getFollow', token, g).then(f => { followCache[g] = f; if (game === g) renderFollow(f); })
+      .catch(e => { $('followOut').innerHTML = '<span class="err">' + esc(e.message) + '</span>'; });
+  }
+  function renderFollow(f) {
+    if (!f.items || !f.items.length) {
+      $('followOut').innerHTML = '<span class="muted small">ยังไม่มีเลขที่ผลออกแล้ว — บันทึกเลขที่ซื้อ แล้วรอผลออก ระบบจะวิเคราะห์ให้ว่าควรซื้อเลขเดิมต่อไหม</span>';
+      return;
+    }
+    const lao = f.game === 'lao', baht = v => money(v) + ' ฿';
+    const tierTxt = t => Object.keys(t).map(k => k + ' ' + t[k]).join(' · ');
+    let h = '<div class="muted small">เลขที่คุณซื้องวด ' + thDate(f.date, lao) + ' · วิเคราะห์สำหรับงวด ' + thDate(f.next, lao) + '</div>';
+    h += f.items.map(x => {
+      const res = x.status === 'win' ? '<span class="badge b-win">งวดนี้ถูก' + (x.each ? ' ' + baht(x.each * x.qty) : '') + '</span>' : '<span class="badge b-lose">งวดนี้ไม่ถูก</span>';
+      const dots = '<span class="dots">' + [0, 1, 2].map(i => '<i class="' + (i < x.score ? 'on' : '') + '"></i>').join('') + '</span>';
+      const sim = s => f.price
+        ? (s.hits ? 'ถูก ' + s.hits + ' ครั้ง · ' : 'ไม่ถูกเลย · ') + 'ลง ' + baht(s.cost) + ' ได้ ' + baht(s.prize) + ' (คืน ' + s.back + '%)'
+        : (s.hits ? 'ถูก ' + s.hits + ' ครั้ง' + (Object.keys(s.tiers).length ? ' (' + tierTxt(s.tiers) + ')' : '') : 'ไม่ถูกเลย');
+      const gap = x.s2.gap === null ? 'ไม่เคยออก' : x.s2.gap === 0 ? 'เพิ่งออกงวดล่าสุด' : 'ไม่ออกมา ' + x.s2.gap + ' งวด';
+      let li = '<li><span>ซื้อ 1 ใบทุกงวด ' + f.recentN + ' งวดหลัง</span><b>' + sim(x.simRecent) + '</b></li>' +
+        '<li><span>ซื้อ 1 ใบทุกงวด ' + x.simAll.draws + ' งวด</span><b>' + sim(x.simAll) + '</b></li>' +
+        '<li><span>2 ตัวท้าย ' + x.tail2 + '</span><b>ออก ' + x.s2.count + ' ครั้ง · ' + gap + '</b></li>';
+      if (x.s3) li += '<li><span>3 ตัว ' + x.tail3 + '</span><b>ออก ' + x.s3.count + ' ครั้ง' + (x.s3.gap === null ? '' : ' · ล่าสุด ' + (x.s3.gap ? x.s3.gap + ' งวดก่อน' : 'งวดนี้')) + '</b></li>';
+      li += '<li><span>เลขเด็ดงวดหน้า</span><b>' + (x.match.length ? esc(x.match.join(' · ')) : 'ไม่ตรง') + '</b></li>';
+      li += '<li><span>ที่คุณซื้อเลขนี้</span><b>' + x.my.times + ' งวด ' + x.my.qty + ' ใบ' +
+        (f.price ? ' · จ่าย ' + baht(x.my.spent) + ' ได้ ' + baht(x.my.won) : ' · ถูก ' + x.my.wins + ' งวด') + '</b></li>';
+      return '<div class="fl"><div class="top"><span class="n">' + esc(x.number) + '</span><span class="q">× ' + x.qty + ' ใบ</span>' + res +
+        '<span class="vd ' + x.verdict.level + '">' + x.verdict.text + dots + '</span></div><ul>' + li + '</ul>' +
+        (x.why.length ? '<div class="why">เหตุผล: ' + esc(x.why.join(' · ')) + '</div>' : '<div class="why">ไม่มีสัญญาณจากสถิติ</div>') + '</div>';
+    }).join('');
+    if (f.price) h += '<div class="muted small" style="margin-top:10px">ถ้าตามทุกเลขด้วยจำนวนเท่าเดิม งวดหน้าใช้เงิน <b>' + baht(f.totalNext) + '</b></div>';
+    h += '<div class="muted small" style="margin-top:6px">คะแนน 3 จุด = ตรงเลขเด็ด · 2 ตัวท้ายออกบ่อยช่วงหลัง · ถ้าตามช่วงหลังจะเคยถูก ' +
+      '— ทุกเลขมีโอกาสออกเท่ากันทุกงวด การตามหรือเปลี่ยนเลขไม่ได้เพิ่มหรือลดโอกาส ใช้เป็นตัวช่วยตัดสินใจและคุมงบเท่านั้น 🍀</div>';
+    $('followOut').innerHTML = h;
+  }
+
+  function loadTips() {
+    const g = game;
+    if (tipsCache[g]) { renderTips(tipsCache[g]); return; }
+    $('tipsOut').innerHTML = '<div class="loading">กำลังวิเคราะห์สถิติ…</div>';
+    call('getTips', token, g).then(t => { tipsCache[g] = t; if (game === g) renderTips(t); })
+      .catch(e => { $('tipsOut').innerHTML = '<div class="card msg err">' + esc(e.message) + '</div>'; });
+  }
+  function renderTips(t) {
+    const lao = t.game === 'lao', n3 = t.game === 'n3';
+    const L = lao ? { top: 'วิ่ง 3 ตัว', low: 'วิ่ง 2 ตัว', two: 'เลขเด็ด 2 ตัว', three: 'เลขเด็ด 3 ตัว' }
+                  : n3 ? { top: 'วิ่ง 3 ตัว', low: 'วิ่ง 2 ตัว', two: 'เลขเด็ด 2 ตัวตรง', three: 'เลขเด็ด 3 ตัวตรง (N3)' }
+                  : { top: 'วิ่งบน', low: 'วิ่งล่าง', two: 'เลขเด็ด 2 ตัวล่าง', three: 'เลขเด็ด 3 ตัวบน' };
+    const run = (lbl, arr) => '<div class="run"><div class="lbl">' + lbl + '</div><div class="balls">' +
+      '<div class="ball">' + arr[0].d + '</div><div class="ball sm">' + arr[1].d + '</div></div>' +
+      '<div class="why">โผล่ ' + arr[0].rec + '% ใน ' + t.window + ' งวดหลัง · ' + arr[0].all + '% ทั้งหมด</div></div>';
+    const pk = arr => arr.map(p => '<div class="pk"><b>' + p.n + '</b><span>' + esc(p.why) + '</span></div>').join('');
+    let h = '<div class="card tips-hero"><div class="k">' + (lao ? 'หวยลาว' : n3 ? 'สลาก N3 (เลขเดียวกับรางวัลที่ 1)' : 'หวยรัฐบาลไทย') + ' · วิเคราะห์จาก ' + t.total + ' งวด</div>' +
+      '<div class="t">เลขเด็ดงวด ' + thDate(t.target, lao) + '</div>' +
+      '<div class="k">อัปเดตเองทุกครั้งที่ผลงวดใหม่ออก · ข้อมูลถึงงวด ' + thDate(t.to, lao) + '</div></div>';
+    h += '<div class="card"><h3>เลขวิ่ง</h3><div class="runs">' + run(L.top, t.runTop) + run(L.low, t.runLow) + '</div></div>';
+    h += '<div class="card"><h3>' + L.two + '</h3><div class="picks-grid">' + pk(t.two) + '</div></div>';
+    h += '<div class="card"><h3>' + L.three + '</h3><div class="picks-grid three">' + pk(t.three) + '</div></div>';
+    h += '<div class="card"><h3>ชุดโต๊ด</h3><div class="muted small">จากเลขวิ่ง 3 อันดับแรก · ซื้อโต๊ดได้ทุกการสลับด้านล่าง</div>' +
+      '<div class="tod-set">' + t.tod.set.split('').join('-') + '</div><div class="perms">' + t.tod.perms.map(x => '<span>' + x + '</span>').join('') + '</div>' +
+      '<div class="muted small" style="margin-top:8px;text-align:center">ชุดนี้เคยออก ' + t.tod.setCount + ' ครั้ง · ชุดที่ออกบ่อยสุดคือ ' +
+      t.tod.bestSet.split('').join('-') + ' (' + t.tod.bestSetCount + ' ครั้ง)</div></div>';
+    if (t.sameDate && t.sameDate.length) {
+      h += '<div class="card"><h3>สถิติงวดวันเดียวกันย้อนหลัง</h3><div class="muted small">งวด ' + thDate(t.target).replace(/ \d+$/, '') + ' ของปีก่อนๆ</div>' +
+        '<table class="same"><tr><th>งวด</th><th>3 ตัวบน</th><th>2 ตัวล่าง</th></tr>' +
+        t.sameDate.map(x => '<tr><td>' + thDate(x.date) + '</td><td><b>' + x.three + '</b></td><td><b>' + x.two + '</b></td></tr>').join('') + '</table></div>';
+    }
+    const bt = t.backtest, K = bt.tested;
+    const row = (lbl, key) => {
+      const me = bt.hits[key] / K * 100, rnd = bt.random[key], mx = Math.max(me, rnd, 1);
+      return '<div class="bt-row"><div class="top"><span>' + lbl + '</span><b>ถูก ' + bt.hits[key] + '/' + K + ' งวด</b></div>' +
+        '<div class="bars"><div class="bar me"><i style="width:' + (me / mx * 100) + '%"></i></div>' +
+        '<div class="bar rnd"><i style="width:' + (rnd / mx * 100) + '%"></i></div></div>' +
+        '<div class="bar-lbl"><span>สูตรนี้ ' + me.toFixed(1) + '%</span><span>ถ้าสุ่ม ~' + rnd + '%</span></div></div>';
+    };
+    h += '<div class="card"><h3>ผลงานย้อนหลัง ' + K + ' งวด</h3>' +
+      '<div class="muted small">เอาสูตรเดียวกันไปคำนวณจากข้อมูลก่อนแต่ละงวด แล้วเทียบกับผลจริง</div>' +
+      row(L.low + ' (หลักแรก)', 'runLow') + row(L.top + ' (หลักแรก)', 'runTop') + row(L.two + ' (6 เลข)', 'two') +
+      row(L.three + ' (3 เลข)', 'three') + row('ชุดโต๊ด', 'tod') +
+      '<table class="same" style="margin-top:10px"><tr><th>งวด</th><th>ผล 3/2 ตัว</th><th>วิ่งบน</th><th>วิ่งล่าง</th><th>2 ตัว</th></tr>' +
+      bt.recent.map(r => '<tr><td>' + thDate(r.date, lao).replace(/ \d+$/, '') + '</td><td><b>' + r.three + '</b> / <b>' + r.two + '</b></td>' +
+        '<td class="' + (r.hit.runTop ? 'hit' : 'miss') + '">' + r.runTop + (r.hit.runTop ? ' ✓' : '') + '</td>' +
+        '<td class="' + (r.hit.runLow ? 'hit' : 'miss') + '">' + r.runLow + (r.hit.runLow ? ' ✓' : '') + '</td>' +
+        '<td class="' + (r.hit.two ? 'hit' : 'miss') + '">' + (r.hit.two ? '✓' : '–') + '</td></tr>').join('') + '</table>' +
+      '<div class="verdict">ผลงานย้อนหลังใกล้เคียงการสุ่ม เพราะหวยออกแบบสุ่มจริง ทุกเลขมีโอกาสเท่ากันทุกงวด เลขเด็ดหน้านี้สรุปสถิติให้เลือกง่ายขึ้น ไม่ได้เพิ่มโอกาสถูก ซื้อพองบที่เสียได้นะครับ 🍀</div></div>';
+    $('tipsOut').innerHTML = h;
+  }
+
+  /* ---------- แจ้งผลทาง LINE ---------- */
+  function renderNotify(s) {
+    const box = $('lineBox');
+    if (!s.lineEnabled) { box.innerHTML = '<div class="muted small">ผู้ดูแลยังไม่ได้เปิดใช้การแจ้งเตือนทาง LINE</div>'; return; }
+    if (s.lineLinked) {
+      box.innerHTML = '<div class="line-ok">✅ เชื่อม LINE แล้ว — ผลหวยจะส่งไปที่ LINE ของคุณ</div>' +
+        '<label class="toggle"><span>⏰ เตือนก่อนหวยไทย/N3 ออก 1 วัน (18:00 น.) พร้อมเลขเด็ดและงบ</span><input type="checkbox" id="remindChk"' + (s.remind ? ' checked' : '') + '></label>' +
+        '<div class="row" style="margin-top:10px"><button class="ghost" id="lineTestBtn">ส่งข้อความทดสอบ</button>' +
+        '<button class="ghost" id="lineUnlinkBtn">ยกเลิกการเชื่อม</button></div>';
+      $('remindChk').onchange = e => { const on = e.target.checked; call('setRemind', token, on).then(() => lineMsg(on ? 'เปิดการเตือนแล้ว' : 'ปิดการเตือนแล้ว', 'ok')).catch(er => lineMsg(er.message, 'err')); };
+      $('lineTestBtn').onclick = () => { lineMsg('กำลังส่ง…'); call('lineTest', token).then(m => lineMsg(m, 'ok')).catch(e => lineMsg(e.message, 'err')); };
+      $('lineUnlinkBtn').onclick = e => { if (!confirmInline(e.target)) return; call('lineUnlink', token).then(s2 => { renderNotify(s2); lineMsg('ยกเลิกแล้ว', 'ok'); }); };
+      return;
+    }
+    box.innerHTML = '<button class="line-btn" id="lineLinkBtn">เชื่อม LINE</button>';
+    $('lineLinkBtn').onclick = () => {
+      lineMsg('กำลังสร้างรหัส…');
+      call('lineLinkCode', token).then(r => {
+        lineMsg('');
+        box.innerHTML = '<ol class="steps">' +
+          '<li>' + (r.botUrl ? '<a href="' + esc(r.botUrl) + '" target="_blank" rel="noopener"><b>กดเพิ่มเพื่อนบอท LINE</b></a>' : 'เพิ่มเพื่อนบอท LINE ของเว็บ (ถามลิงก์จากผู้ดูแล)') + '</li>' +
+          '<li>ส่งรหัสนี้ในแชทกับบอท (ใช้ได้ 15 นาที)</li></ol>' +
+          '<div class="line-code">' + esc(r.code) + '</div>' +
+          '<div class="row"><button class="ghost" id="lineCopy">คัดลอกรหัส</button><button id="lineDone">ส่งแล้ว ตรวจสถานะ</button></div>';
+        $('lineCopy').onclick = () => { try { navigator.clipboard.writeText(r.code); lineMsg('คัดลอกแล้ว', 'ok'); } catch (e) {} };
+        $('lineDone').onclick = () => loadNotify(true);
+      }).catch(e => lineMsg(e.message, 'err'));
+    };
+  }
+  function lineMsg(t, kind) { $('lineMsg').className = 'msg' + (kind ? ' ' + kind : ''); $('lineMsg').textContent = t || ''; }
+  function loadNotify(check) {
+    call('getNotifySettings', token).then(s => {
+      renderNotify(s);
+      if (check) lineMsg(s.lineLinked ? 'เชื่อมสำเร็จ 🎉' : 'ยังไม่พบการเชื่อม — ส่งรหัสให้บอทแล้วกดตรวจอีกครั้ง', s.lineLinked ? 'ok' : 'err');
+    }).catch(e => { $('lineBox').innerHTML = '<div class="msg err">' + esc(e.message) + '</div>'; });
+  }
+  function renderLineCfg(c) {
+    $('lineCfgStatus').innerHTML = c.hasToken ? '<span class="ok">✅ ตั้งค่า token แล้ว</span>' + (c.botUrl ? ' · ลิงก์บอท: ' + esc(c.botUrl) : ' · ยังไม่ได้ใส่ลิงก์เพิ่มเพื่อน')
+      : 'ยังไม่ได้ตั้งค่า — ใส่ Channel access token จาก LINE Developers';
+    $('lineCfgForm').botUrl.value = c.botUrl || '';
+    $('webhookBox').classList.toggle('hidden', !c.webhookUrl);
+    $('webhookUrl').value = c.webhookUrl || '';
+  }
+  function loadLineCfg() { call('getLineConfig', token).then(renderLineCfg).catch(e => { $('lineCfgStatus').textContent = e.message; }); }
+  $('lineCfgForm').onsubmit = e => {
+    e.preventDefault();
+    const f = Object.fromEntries(new FormData(e.target).entries());
+    $('lineCfgMsg').className = 'msg'; $('lineCfgMsg').textContent = 'กำลังบันทึก…';
+    call('saveLineConfig', token, f).then(c => { renderLineCfg(c); e.target.channelToken.value = ''; $('lineCfgMsg').className = 'msg ok'; $('lineCfgMsg').textContent = 'บันทึกแล้ว'; loadNotify(); })
+      .catch(err => { $('lineCfgMsg').className = 'msg err'; $('lineCfgMsg').textContent = err.message; });
+  };
+  $('copyHook').onclick = () => { try { navigator.clipboard.writeText($('webhookUrl').value); $('lineCfgMsg').className = 'msg ok'; $('lineCfgMsg').textContent = 'คัดลอก Webhook URL แล้ว'; } catch (e) {} };
+
+  /* ---------- start ---------- */
+  if (token) startApp(); else showAuth();
+</script>
+</body>
+</html>

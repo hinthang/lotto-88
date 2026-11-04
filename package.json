@@ -1,0 +1,14 @@
+{
+  "name": "lotto-88",
+  "private": true,
+  "description": "เลขเด็ด 88 — เว็บสถิติและตรวจหวยไทย ลาว N3 บน Google Apps Script",
+  "scripts": {
+    "test": "node test/t9.js && node test/t12.js && node test/t13.js && node test/t14.js",
+    "push": "clasp push",
+    "pull": "clasp pull",
+    "deploy": "clasp push && clasp deploy --description \"update\""
+  },
+  "devDependencies": {
+    "@google/clasp": "^2.4.2"
+  }
+}
