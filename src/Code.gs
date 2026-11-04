@@ -60,7 +60,9 @@ const N3_START = '2024-11-01';
 function doGet() {
   return HtmlService.createHtmlOutputFromFile('Index')
     .setTitle('เลขเด็ด 88 · หวยไทย-ลาว')
-    .addMetaTag('viewport', 'width=device-width, initial-scale=1');
+    .addMetaTag('viewport', 'width=device-width, initial-scale=1')
+    // อนุญาตให้ฝังในหน้า GitHub Pages (hinthang.github.io/lotto-88)
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
 
 /* ═════════════ ติดตั้ง ═════════════ */
