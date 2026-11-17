@@ -31,7 +31,7 @@ const SESSION_DAYS = 30;
 
 const SRC = { th_hist: 'ผลย้อนหลัง (ไทยรัฐ)', th_seed: 'สถิติ 2 ตัว', api: 'สำนักงานสลากฯ', manual: 'กรอกเอง',
   notfound: 'API ไม่พบงวดนี้', lao_hist: 'ผลย้อนหลัง (sanook/raakaadee)', lao_api: 'sanook',
-  n3_hist: 'N3 ย้อนหลัง (ไทยรัฐ)', n3_auto: 'จากรางวัลที่ 1 (รอเงินรางวัล)', n3_tr: 'ไทยรัฐ' };
+  n3_hist: 'N3 ย้อนหลัง (ไทยรัฐ)', n3_auto: 'จากรางวัลที่ 1 (รอเงินรางวัล)', n3_tr: 'ไทยรัฐ', sanook_th: 'sanook' };
 
 const PRIZES = {
   first:  { name: 'รางวัลที่ 1', amount: 6000000 },
@@ -75,8 +75,8 @@ function setup() {
   ScriptApp.getProjectTriggers()
     .filter(t => ['updateLatest', 'updateThai', 'updateLao', 'updateN3', 'remindDraws', 'drawDayUpdate', 'drawDayRetry'].indexOf(t.getHandlerFunction()) >= 0)
     .forEach(t => ScriptApp.deleteTrigger(t));
-  // หวยไทย/N3: ทุกวัน 16:00 น. (วันไม่ใช่วันหวยออกจะจบเร็ว) — วันหวยออกถ้าผลยังไม่ครบ จะนัดดึงซ้ำทุก 15 นาทีเอง
-  ScriptApp.newTrigger('drawDayUpdate').timeBased().everyDays(1).atHour(16).nearMinute(0).inTimezone(TZ).create();
+  // หวยไทย/N3: ทุกวันราว 15:35–16:05 น. (วันไม่ใช่วันหวยออกจะจบเร็ว) — วันหวยออกถ้าผลยังไม่ครบ จะนัดดึงซ้ำทุก 10 นาทีเอง
+  ScriptApp.newTrigger('drawDayUpdate').timeBased().everyDays(1).atHour(15).nearMinute(50).inTimezone(TZ).create();
   // เตือนทาง LINE ก่อนหวยไทย/N3 ออก 1 วัน เวลา 18:00 น.
   ScriptApp.newTrigger('remindDraws').timeBased().everyDays(1).atHour(18).nearMinute(0).inTimezone(TZ).create();
   // สลาก N3: เติมเงินรางวัลที่ยังขาด ทุกวัน 20:30 น.
@@ -1467,7 +1467,7 @@ function upsert_(key, row, width) {
   }
 }
 
-/** หวยไทย: ดึงผลครบทุกรางวัลของงวดใน 6 วันล่าสุดที่ยังไม่มี (ทริกเกอร์วันที่ 1 และ 16 เวลา 16:00 / 17:00) */
+/** หวยไทย: ดึงผลครบทุกรางวัลของงวดใน 6 วันล่าสุดที่ยังไม่มี — สำนักงานสลากฯ ก่อน ถ้ายังไม่ครบใช้ sanook */
 function updateThai() {
   ensureData_();
   const draws = readTh_();
@@ -1478,18 +1478,28 @@ function updateThai() {
   const dates = [];
   for (let back = 0; back <= 5; back++) {
     const d = Utilities.formatDate(new Date(now.getTime() - back * 86400000), TZ, 'yyyy-MM-dd');
-    if (back === 0 && hour < 16) continue;
+    if (back === 0 && hour < 15) continue;
     if (!full[d]) dates.push(d);
   }
   if (!dates.length) return 'หวยไทย: ไม่มีงวดใหม่';
-  const res = UrlFetchApp.fetchAll(dates.map(gloRequest_));
-  const added = [];
+  // แหล่งที่ 1: สำนักงานสลากฯ — ถ้าเว็บล่ม/ช้า จะไม่ทำให้ทั้งรอบพัง
+  let res = [];
+  try { res = UrlFetchApp.fetchAll(dates.map(gloRequest_)); } catch (e) { Logger.log('GLO ' + e); }
+  const today = today_();
+  const added = [], via = {};
   dates.forEach((date, k) => {
-    if (res[k].getResponseCode() !== 200) return;
-    const map = parseGlo_(res[k].getContentText(), date);
+    let map = null, src = SRC.api;
+    try { if (res[k] && res[k].getResponseCode() === 200) map = parseGlo_(res[k].getContentText(), date); } catch (e) { Logger.log('GLO parse ' + e); }
+    // แหล่งที่ 2: sanook — ใช้เมื่อสำนักงานสลากฯ ยังไม่ครบ (เฉพาะวันหวยออกตามปกติ หรือวันนี้)
+    const p = date.split('-');
+    if (!mapComplete_(map) && (date === today || isThaiDrawDay_(+p[1], +p[2]))) {
+      const s = fetchSanookTh_(date);
+      if (s && mapCount_(s) > mapCount_(map)) { map = s; src = SRC.sanook_th; }
+    }
     if (!map) return;
     if (firsts[map.first[0]] && firsts[map.first[0]] !== date) return;
-    upsert_('th', thRowFromMap_(date, map), TH_HEADERS.length);
+    via[date] = src;
+    upsert_('th', thRowFromMap_(date, map, src), TH_HEADERS.length);
     firsts[map.first[0]] = date;
     added.push(date);
   });
@@ -1498,9 +1508,50 @@ function updateThai() {
   readTh_().forEach(d => { after[d.date] = d; });
   added.filter(d => thComplete_(after[d])).forEach(d => { try { notifyDraw_('th', d); } catch (e) { Logger.log('notify th ' + e); } });
   try { Logger.log(updateN3_()); } catch (e) { Logger.log('N3 ' + e); }
-  const msg = added.length ? 'หวยไทย: อัปเดตงวด ' + added.join(', ') + (added.some(d => !thComplete_(after[d])) ? ' (ยังไม่ครบทุกรางวัล)' : '') : 'หวยไทย: ยังไม่มีผลงวดใหม่';
+  const msg = added.length ? 'หวยไทย: อัปเดตงวด ' + added.map(d => d + ' (' + via[d] + ')').join(', ') + (added.some(d => !thComplete_(after[d])) ? ' (ยังไม่ครบทุกรางวัล)' : '') : 'หวยไทย: ยังไม่มีผลงวดใหม่';
   Logger.log(msg);
   return msg;
+}
+
+/** map ผลรางวัล (จาก GLO หรือ sanook) ครบทุกรางวัลหรือยัง */
+function mapComplete_(m) { return !!(m && m.first && (m.fifth || []).length >= 100 && (m.fourth || []).length >= 50 && (m.last2 || []).length); }
+function mapCount_(m) { return m ? Object.keys(m).reduce((s, k) => s + (m[k] || []).length, 0) : 0; }
+
+/** sanook: news.sanook.com/lotto/check/ddmmyyyy(พ.ศ.) — อัปเดตสดระหว่างออกรางวัล */
+function fetchSanookTh_(date) {
+  const p = date.split('-');
+  const url = 'https://news.sanook.com/lotto/check/' + p[2] + p[1] + (+p[0] + 543) + '/';
+  try {
+    const r = UrlFetchApp.fetch(url, { muteHttpExceptions: true, followRedirects: true, headers: { 'User-Agent': 'Mozilla/5.0' } });
+    if (r.getResponseCode() !== 200) return null;
+    return parseSanookTh_(r.getContentText());
+  } catch (e) { Logger.log('sanook ' + e); return null; }
+}
+
+/** อ่านผลจาก articleBody ของหน้า sanook — คืน map รูปแบบเดียวกับ parseGlo_ (ข้ามเลขที่ยังไม่ออก เช่น xxxxxx) */
+function parseSanookTh_(html) {
+  const m = String(html).match(/"articleBody"\s*:\s*"((?:[^"\\]|\\.)*)"/);
+  if (!m) return null;
+  let t;
+  try { t = JSON.parse('"' + m[1] + '"'); } catch (e) { t = m[1].replace(/\\r|\\n/g, '\n'); }
+  t = t.replace(/&nbsp;/g, ' ').replace(/\r/g, '');
+  const sec = [
+    ['first', /รางวัลที่ 1(?!\d)/, 6, 1], ['last3f', /เลขหน้า 3 ตัว/, 3, 2], ['last3b', /เลขท้าย 3 ตัว/, 3, 2],
+    ['last2', /เลขท้าย 2 ตัว/, 2, 1], ['near1', /ข้างเคียงรางวัลที่ 1/, 6, 2], ['second', /รางวัลที่ 2(?!\d)/, 6, 5],
+    ['third', /รางวัลที่ 3(?!\d)/, 6, 10], ['fourth', /รางวัลที่ 4(?!\d)/, 6, 50], ['fifth', /รางวัลที่ 5(?!\d)/, 6, 100],
+  ];
+  const pos = sec.map(s => t.search(s[1]));
+  const map = {};
+  sec.forEach((s, i) => {
+    if (pos[i] < 0) return;
+    const after = pos.filter(x => x > pos[i]);
+    const end = after.length ? Math.min.apply(null, after) : t.length;
+    const body = t.slice(pos[i], end).replace(/^[^\n]*\n/, '');   // ตัดบรรทัดหัวข้อ (มีจำนวนเงิน)
+    const nums = body.match(new RegExp('(?<!\\d)\\d{' + s[2] + '}(?!\\d)', 'g')) || [];
+    if (nums.length) map[s[0]] = nums.slice(0, s[3]);
+  });
+  if (!map.first || !/^\d{6}$/.test(map.first[0]) || !map.last2) return null;
+  return map;
 }
 
 /** ผลหวยไทยครบทุกรางวัลหรือยัง (รางวัลที่ 5 มี 100 เลข) */
@@ -1515,10 +1566,13 @@ function thComplete_(d) {
  */
 function drawDayUpdate() {
   const lock = LockService.getScriptLock();
-  if (!lock.tryLock(30000)) return 'กำลังอัปเดตอยู่';
   let msg;
-  try { msg = updateThai(); } finally { lock.releaseLock(); }
-  const next = drawDayNext_();
+  if (lock.tryLock(30000)) {
+    // error รอบนี้ (เช่นเว็บกองสลากล่ม) ต้องไม่ทำให้การนัดดึงซ้ำหายไป
+    try { msg = updateThai(); } catch (e) { msg = 'หวยไทย error: ' + e; } finally { lock.releaseLock(); }
+  } else msg = 'กำลังอัปเดตอยู่';
+  let next = 0;
+  try { next = drawDayNext_(); } catch (e) { next = 10; Logger.log('next ' + e); }
   clearRetry_();
   if (next) {
     ScriptApp.newTrigger('drawDayRetry').timeBased().after(next * 60000).create();
@@ -1539,7 +1593,7 @@ function drawDayNext_() {
   if (!isThaiDrawDay_(mo, day)) return 0;
   const hour = Number(Utilities.formatDate(new Date(), TZ, 'H'));
   const th = readTh_().filter(d => d.date === today)[0];
-  if (!thComplete_(th)) return hour < 20 ? 15 : 0;
+  if (!thComplete_(th)) return hour < 20 ? 10 : 0;
   const n3 = readN3_().filter(d => d.date === today)[0];
   if (!n3 || !n3.p3) return hour < 21 ? 30 : 0;
   return 0;
@@ -1642,5 +1696,7 @@ function addDraw(token, o) {
 function testApi() {
   const res = UrlFetchApp.fetch(GLO_URL, gloRequest_('2026-11-01'));
   Logger.log('GLO HTTP %s: %s', res.getResponseCode(), res.getContentText().slice(0, 800));
+  const s = fetchSanookTh_('2026-11-16');
+  Logger.log('sanook 16 พ.ย. 69: %s', s ? Object.keys(s).map(k => k + ' ' + s[k].length).join(', ') + ' · รางวัลที่ 1 ' + s.first[0] : 'ดึงไม่ได้');
   Logger.log(updateLao());
 }
